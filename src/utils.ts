@@ -1,6 +1,3 @@
-import * as debounce from "lodash.debounce";
-import * as throttle from "lodash.throttle";
-
 export enum Marker {
   RedirectCount = "redirect-count",
   RedirectStatusDone = "anti-redirect-origin-href",
@@ -28,6 +25,29 @@ export function matchLinkFromUrl(aElement: HTMLAnchorElement, tester: RegExp): s
     url = /https?:\/\//.test(matcher[1]) ? matcher[1] : "";
   }
   return url;
+}
+
+/**
+ * 重试异步操作
+ * @param {() => Promise<any>} operation
+ * @param {number} maxRetries
+ * @param {number} currentRetry
+ */
+export async function retryAsyncOperation<T>(operation: () => Promise<T>, maxRetries: number, currentRetry = 0): Promise<T> {
+  try {
+    // 尝试执行操作
+    const result = await operation();
+    return result;
+  } catch (err) {
+    if (currentRetry < maxRetries) {
+      // 如果当前重试次数小于最大重试次数，等待一段时间后重试
+      await new Promise(resolve => setTimeout(resolve, 1000)); // 等待1秒
+      return retryAsyncOperation(operation, maxRetries, currentRetry + 1);
+    } else {
+      // 如果重试次数用尽，抛出错误
+      throw err;
+    }
+  }
 }
 
 class Query {
@@ -74,18 +94,6 @@ export function queryParser(queryString: string): Query {
 
 export function getText(htmlElement: HTMLElement): string {
   return (htmlElement.innerText || htmlElement.textContent).trim();
-}
-
-export function throttleDecorator(wait: number, options = {}): DecoratorMethodFunction {
-  return (originMethod, context: ClassMemberDecoratorContext) => {
-    return throttle(originMethod, wait, options);
-  };
-}
-
-export function debounceDecorator(wait: number, options = {}): DecoratorMethodFunction {
-  return (originMethod, context: ClassMemberDecoratorContext) => {
-    return debounce(originMethod, wait, options);
-  };
 }
 
 export function isInView(element: HTMLElement): boolean {

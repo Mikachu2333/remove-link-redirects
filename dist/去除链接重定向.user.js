@@ -2,9 +2,9 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间
-// @version           1.9.0
+// @version           1.9.1
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-03 16:53:50
+// @update            2024-07-03 17:09:59
 // @grant             GM_xmlhttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
@@ -178,24 +178,30 @@ exports.App = App;
 
 /***/ }),
 /* 2 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Marker = void 0;
 exports.matchLinkFromUrl = matchLinkFromUrl;
+exports.retryAsyncOperation = retryAsyncOperation;
 exports.queryParser = queryParser;
 exports.getText = getText;
-exports.throttleDecorator = throttleDecorator;
-exports.debounceDecorator = debounceDecorator;
 exports.isInView = isInView;
 exports.getRedirect = getRedirect;
 exports.increaseRedirect = increaseRedirect;
 exports.decreaseRedirect = decreaseRedirect;
 exports.antiRedirect = antiRedirect;
-const debounce = __webpack_require__(3);
-const throttle = __webpack_require__(4);
 var Marker;
 (function (Marker) {
     Marker["RedirectCount"] = "redirect-count";
@@ -220,6 +226,32 @@ function matchLinkFromUrl(aElement, tester) {
         url = /https?:\/\//.test(matcher[1]) ? matcher[1] : "";
     }
     return url;
+}
+/**
+ * 重试异步操作
+ * @param {() => Promise<any>} operation
+ * @param {number} maxRetries
+ * @param {number} currentRetry
+ */
+function retryAsyncOperation(operation_1, maxRetries_1) {
+    return __awaiter(this, arguments, void 0, function* (operation, maxRetries, currentRetry = 0) {
+        try {
+            // 尝试执行操作
+            const result = yield operation();
+            return result;
+        }
+        catch (err) {
+            if (currentRetry < maxRetries) {
+                // 如果当前重试次数小于最大重试次数，等待一段时间后重试
+                yield new Promise(resolve => setTimeout(resolve, 1000)); // 等待1秒
+                return retryAsyncOperation(operation, maxRetries, currentRetry + 1);
+            }
+            else {
+                // 如果重试次数用尽，抛出错误
+                throw err;
+            }
+        }
+    });
 }
 class Query {
     constructor(queryStr) {
@@ -262,16 +294,6 @@ function queryParser(queryString) {
 }
 function getText(htmlElement) {
     return (htmlElement.innerText || htmlElement.textContent).trim();
-}
-function throttleDecorator(wait, options = {}) {
-    return (originMethod, context) => {
-        return throttle(originMethod, wait, options);
-    };
-}
-function debounceDecorator(wait, options = {}) {
-    return (originMethod, context) => {
-        return debounce(originMethod, wait, options);
-    };
 }
 function isInView(element) {
     const rect = element.getBoundingClientRect();
@@ -325,834 +347,6 @@ function antiRedirect(aElement, realUrl, options = {}) {
 
 /***/ }),
 /* 3 */
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-/**
- * lodash (Custom Build) <https://lodash.com/>
- * Build: `lodash modularize exports="npm" -o ./`
- * Copyright jQuery Foundation and other contributors <https://jquery.org/>
- * Released under MIT license <https://lodash.com/license>
- * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
- * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- */
-
-/** Used as the `TypeError` message for "Functions" methods. */
-var FUNC_ERROR_TEXT = 'Expected a function';
-
-/** Used as references for various `Number` constants. */
-var NAN = 0 / 0;
-
-/** `Object#toString` result references. */
-var symbolTag = '[object Symbol]';
-
-/** Used to match leading and trailing whitespace. */
-var reTrim = /^\s+|\s+$/g;
-
-/** Used to detect bad signed hexadecimal string values. */
-var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
-
-/** Used to detect binary string values. */
-var reIsBinary = /^0b[01]+$/i;
-
-/** Used to detect octal string values. */
-var reIsOctal = /^0o[0-7]+$/i;
-
-/** Built-in method references without a dependency on `root`. */
-var freeParseInt = parseInt;
-
-/** Detect free variable `global` from Node.js. */
-var freeGlobal = typeof __webpack_require__.g == 'object' && __webpack_require__.g && __webpack_require__.g.Object === Object && __webpack_require__.g;
-
-/** Detect free variable `self`. */
-var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
-
-/** Used as a reference to the global object. */
-var root = freeGlobal || freeSelf || Function('return this')();
-
-/** Used for built-in method references. */
-var objectProto = Object.prototype;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objectToString = objectProto.toString;
-
-/* Built-in method references for those with the same name as other `lodash` methods. */
-var nativeMax = Math.max,
-    nativeMin = Math.min;
-
-/**
- * Gets the timestamp of the number of milliseconds that have elapsed since
- * the Unix epoch (1 January 1970 00:00:00 UTC).
- *
- * @static
- * @memberOf _
- * @since 2.4.0
- * @category Date
- * @returns {number} Returns the timestamp.
- * @example
- *
- * _.defer(function(stamp) {
- *   console.log(_.now() - stamp);
- * }, _.now());
- * // => Logs the number of milliseconds it took for the deferred invocation.
- */
-var now = function() {
-  return root.Date.now();
-};
-
-/**
- * Creates a debounced function that delays invoking `func` until after `wait`
- * milliseconds have elapsed since the last time the debounced function was
- * invoked. The debounced function comes with a `cancel` method to cancel
- * delayed `func` invocations and a `flush` method to immediately invoke them.
- * Provide `options` to indicate whether `func` should be invoked on the
- * leading and/or trailing edge of the `wait` timeout. The `func` is invoked
- * with the last arguments provided to the debounced function. Subsequent
- * calls to the debounced function return the result of the last `func`
- * invocation.
- *
- * **Note:** If `leading` and `trailing` options are `true`, `func` is
- * invoked on the trailing edge of the timeout only if the debounced function
- * is invoked more than once during the `wait` timeout.
- *
- * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
- * until to the next tick, similar to `setTimeout` with a timeout of `0`.
- *
- * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
- * for details over the differences between `_.debounce` and `_.throttle`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to debounce.
- * @param {number} [wait=0] The number of milliseconds to delay.
- * @param {Object} [options={}] The options object.
- * @param {boolean} [options.leading=false]
- *  Specify invoking on the leading edge of the timeout.
- * @param {number} [options.maxWait]
- *  The maximum time `func` is allowed to be delayed before it's invoked.
- * @param {boolean} [options.trailing=true]
- *  Specify invoking on the trailing edge of the timeout.
- * @returns {Function} Returns the new debounced function.
- * @example
- *
- * // Avoid costly calculations while the window size is in flux.
- * jQuery(window).on('resize', _.debounce(calculateLayout, 150));
- *
- * // Invoke `sendMail` when clicked, debouncing subsequent calls.
- * jQuery(element).on('click', _.debounce(sendMail, 300, {
- *   'leading': true,
- *   'trailing': false
- * }));
- *
- * // Ensure `batchLog` is invoked once after 1 second of debounced calls.
- * var debounced = _.debounce(batchLog, 250, { 'maxWait': 1000 });
- * var source = new EventSource('/stream');
- * jQuery(source).on('message', debounced);
- *
- * // Cancel the trailing debounced invocation.
- * jQuery(window).on('popstate', debounced.cancel);
- */
-function debounce(func, wait, options) {
-  var lastArgs,
-      lastThis,
-      maxWait,
-      result,
-      timerId,
-      lastCallTime,
-      lastInvokeTime = 0,
-      leading = false,
-      maxing = false,
-      trailing = true;
-
-  if (typeof func != 'function') {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  wait = toNumber(wait) || 0;
-  if (isObject(options)) {
-    leading = !!options.leading;
-    maxing = 'maxWait' in options;
-    maxWait = maxing ? nativeMax(toNumber(options.maxWait) || 0, wait) : maxWait;
-    trailing = 'trailing' in options ? !!options.trailing : trailing;
-  }
-
-  function invokeFunc(time) {
-    var args = lastArgs,
-        thisArg = lastThis;
-
-    lastArgs = lastThis = undefined;
-    lastInvokeTime = time;
-    result = func.apply(thisArg, args);
-    return result;
-  }
-
-  function leadingEdge(time) {
-    // Reset any `maxWait` timer.
-    lastInvokeTime = time;
-    // Start the timer for the trailing edge.
-    timerId = setTimeout(timerExpired, wait);
-    // Invoke the leading edge.
-    return leading ? invokeFunc(time) : result;
-  }
-
-  function remainingWait(time) {
-    var timeSinceLastCall = time - lastCallTime,
-        timeSinceLastInvoke = time - lastInvokeTime,
-        result = wait - timeSinceLastCall;
-
-    return maxing ? nativeMin(result, maxWait - timeSinceLastInvoke) : result;
-  }
-
-  function shouldInvoke(time) {
-    var timeSinceLastCall = time - lastCallTime,
-        timeSinceLastInvoke = time - lastInvokeTime;
-
-    // Either this is the first call, activity has stopped and we're at the
-    // trailing edge, the system time has gone backwards and we're treating
-    // it as the trailing edge, or we've hit the `maxWait` limit.
-    return (lastCallTime === undefined || (timeSinceLastCall >= wait) ||
-      (timeSinceLastCall < 0) || (maxing && timeSinceLastInvoke >= maxWait));
-  }
-
-  function timerExpired() {
-    var time = now();
-    if (shouldInvoke(time)) {
-      return trailingEdge(time);
-    }
-    // Restart the timer.
-    timerId = setTimeout(timerExpired, remainingWait(time));
-  }
-
-  function trailingEdge(time) {
-    timerId = undefined;
-
-    // Only invoke if we have `lastArgs` which means `func` has been
-    // debounced at least once.
-    if (trailing && lastArgs) {
-      return invokeFunc(time);
-    }
-    lastArgs = lastThis = undefined;
-    return result;
-  }
-
-  function cancel() {
-    if (timerId !== undefined) {
-      clearTimeout(timerId);
-    }
-    lastInvokeTime = 0;
-    lastArgs = lastCallTime = lastThis = timerId = undefined;
-  }
-
-  function flush() {
-    return timerId === undefined ? result : trailingEdge(now());
-  }
-
-  function debounced() {
-    var time = now(),
-        isInvoking = shouldInvoke(time);
-
-    lastArgs = arguments;
-    lastThis = this;
-    lastCallTime = time;
-
-    if (isInvoking) {
-      if (timerId === undefined) {
-        return leadingEdge(lastCallTime);
-      }
-      if (maxing) {
-        // Handle invocations in a tight loop.
-        timerId = setTimeout(timerExpired, wait);
-        return invokeFunc(lastCallTime);
-      }
-    }
-    if (timerId === undefined) {
-      timerId = setTimeout(timerExpired, wait);
-    }
-    return result;
-  }
-  debounced.cancel = cancel;
-  debounced.flush = flush;
-  return debounced;
-}
-
-/**
- * Checks if `value` is the
- * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
- * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(_.noop);
- * // => true
- *
- * _.isObject(null);
- * // => false
- */
-function isObject(value) {
-  var type = typeof value;
-  return !!value && (type == 'object' || type == 'function');
-}
-
-/**
- * Checks if `value` is object-like. A value is object-like if it's not `null`
- * and has a `typeof` result of "object".
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- * @example
- *
- * _.isObjectLike({});
- * // => true
- *
- * _.isObjectLike([1, 2, 3]);
- * // => true
- *
- * _.isObjectLike(_.noop);
- * // => false
- *
- * _.isObjectLike(null);
- * // => false
- */
-function isObjectLike(value) {
-  return !!value && typeof value == 'object';
-}
-
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
-function isSymbol(value) {
-  return typeof value == 'symbol' ||
-    (isObjectLike(value) && objectToString.call(value) == symbolTag);
-}
-
-/**
- * Converts `value` to a number.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to process.
- * @returns {number} Returns the number.
- * @example
- *
- * _.toNumber(3.2);
- * // => 3.2
- *
- * _.toNumber(Number.MIN_VALUE);
- * // => 5e-324
- *
- * _.toNumber(Infinity);
- * // => Infinity
- *
- * _.toNumber('3.2');
- * // => 3.2
- */
-function toNumber(value) {
-  if (typeof value == 'number') {
-    return value;
-  }
-  if (isSymbol(value)) {
-    return NAN;
-  }
-  if (isObject(value)) {
-    var other = typeof value.valueOf == 'function' ? value.valueOf() : value;
-    value = isObject(other) ? (other + '') : other;
-  }
-  if (typeof value != 'string') {
-    return value === 0 ? value : +value;
-  }
-  value = value.replace(reTrim, '');
-  var isBinary = reIsBinary.test(value);
-  return (isBinary || reIsOctal.test(value))
-    ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
-    : (reIsBadHex.test(value) ? NAN : +value);
-}
-
-module.exports = debounce;
-
-
-/***/ }),
-/* 4 */
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-/**
- * lodash (Custom Build) <https://lodash.com/>
- * Build: `lodash modularize exports="npm" -o ./`
- * Copyright jQuery Foundation and other contributors <https://jquery.org/>
- * Released under MIT license <https://lodash.com/license>
- * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
- * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- */
-
-/** Used as the `TypeError` message for "Functions" methods. */
-var FUNC_ERROR_TEXT = 'Expected a function';
-
-/** Used as references for various `Number` constants. */
-var NAN = 0 / 0;
-
-/** `Object#toString` result references. */
-var symbolTag = '[object Symbol]';
-
-/** Used to match leading and trailing whitespace. */
-var reTrim = /^\s+|\s+$/g;
-
-/** Used to detect bad signed hexadecimal string values. */
-var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
-
-/** Used to detect binary string values. */
-var reIsBinary = /^0b[01]+$/i;
-
-/** Used to detect octal string values. */
-var reIsOctal = /^0o[0-7]+$/i;
-
-/** Built-in method references without a dependency on `root`. */
-var freeParseInt = parseInt;
-
-/** Detect free variable `global` from Node.js. */
-var freeGlobal = typeof __webpack_require__.g == 'object' && __webpack_require__.g && __webpack_require__.g.Object === Object && __webpack_require__.g;
-
-/** Detect free variable `self`. */
-var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
-
-/** Used as a reference to the global object. */
-var root = freeGlobal || freeSelf || Function('return this')();
-
-/** Used for built-in method references. */
-var objectProto = Object.prototype;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objectToString = objectProto.toString;
-
-/* Built-in method references for those with the same name as other `lodash` methods. */
-var nativeMax = Math.max,
-    nativeMin = Math.min;
-
-/**
- * Gets the timestamp of the number of milliseconds that have elapsed since
- * the Unix epoch (1 January 1970 00:00:00 UTC).
- *
- * @static
- * @memberOf _
- * @since 2.4.0
- * @category Date
- * @returns {number} Returns the timestamp.
- * @example
- *
- * _.defer(function(stamp) {
- *   console.log(_.now() - stamp);
- * }, _.now());
- * // => Logs the number of milliseconds it took for the deferred invocation.
- */
-var now = function() {
-  return root.Date.now();
-};
-
-/**
- * Creates a debounced function that delays invoking `func` until after `wait`
- * milliseconds have elapsed since the last time the debounced function was
- * invoked. The debounced function comes with a `cancel` method to cancel
- * delayed `func` invocations and a `flush` method to immediately invoke them.
- * Provide `options` to indicate whether `func` should be invoked on the
- * leading and/or trailing edge of the `wait` timeout. The `func` is invoked
- * with the last arguments provided to the debounced function. Subsequent
- * calls to the debounced function return the result of the last `func`
- * invocation.
- *
- * **Note:** If `leading` and `trailing` options are `true`, `func` is
- * invoked on the trailing edge of the timeout only if the debounced function
- * is invoked more than once during the `wait` timeout.
- *
- * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
- * until to the next tick, similar to `setTimeout` with a timeout of `0`.
- *
- * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
- * for details over the differences between `_.debounce` and `_.throttle`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to debounce.
- * @param {number} [wait=0] The number of milliseconds to delay.
- * @param {Object} [options={}] The options object.
- * @param {boolean} [options.leading=false]
- *  Specify invoking on the leading edge of the timeout.
- * @param {number} [options.maxWait]
- *  The maximum time `func` is allowed to be delayed before it's invoked.
- * @param {boolean} [options.trailing=true]
- *  Specify invoking on the trailing edge of the timeout.
- * @returns {Function} Returns the new debounced function.
- * @example
- *
- * // Avoid costly calculations while the window size is in flux.
- * jQuery(window).on('resize', _.debounce(calculateLayout, 150));
- *
- * // Invoke `sendMail` when clicked, debouncing subsequent calls.
- * jQuery(element).on('click', _.debounce(sendMail, 300, {
- *   'leading': true,
- *   'trailing': false
- * }));
- *
- * // Ensure `batchLog` is invoked once after 1 second of debounced calls.
- * var debounced = _.debounce(batchLog, 250, { 'maxWait': 1000 });
- * var source = new EventSource('/stream');
- * jQuery(source).on('message', debounced);
- *
- * // Cancel the trailing debounced invocation.
- * jQuery(window).on('popstate', debounced.cancel);
- */
-function debounce(func, wait, options) {
-  var lastArgs,
-      lastThis,
-      maxWait,
-      result,
-      timerId,
-      lastCallTime,
-      lastInvokeTime = 0,
-      leading = false,
-      maxing = false,
-      trailing = true;
-
-  if (typeof func != 'function') {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  wait = toNumber(wait) || 0;
-  if (isObject(options)) {
-    leading = !!options.leading;
-    maxing = 'maxWait' in options;
-    maxWait = maxing ? nativeMax(toNumber(options.maxWait) || 0, wait) : maxWait;
-    trailing = 'trailing' in options ? !!options.trailing : trailing;
-  }
-
-  function invokeFunc(time) {
-    var args = lastArgs,
-        thisArg = lastThis;
-
-    lastArgs = lastThis = undefined;
-    lastInvokeTime = time;
-    result = func.apply(thisArg, args);
-    return result;
-  }
-
-  function leadingEdge(time) {
-    // Reset any `maxWait` timer.
-    lastInvokeTime = time;
-    // Start the timer for the trailing edge.
-    timerId = setTimeout(timerExpired, wait);
-    // Invoke the leading edge.
-    return leading ? invokeFunc(time) : result;
-  }
-
-  function remainingWait(time) {
-    var timeSinceLastCall = time - lastCallTime,
-        timeSinceLastInvoke = time - lastInvokeTime,
-        result = wait - timeSinceLastCall;
-
-    return maxing ? nativeMin(result, maxWait - timeSinceLastInvoke) : result;
-  }
-
-  function shouldInvoke(time) {
-    var timeSinceLastCall = time - lastCallTime,
-        timeSinceLastInvoke = time - lastInvokeTime;
-
-    // Either this is the first call, activity has stopped and we're at the
-    // trailing edge, the system time has gone backwards and we're treating
-    // it as the trailing edge, or we've hit the `maxWait` limit.
-    return (lastCallTime === undefined || (timeSinceLastCall >= wait) ||
-      (timeSinceLastCall < 0) || (maxing && timeSinceLastInvoke >= maxWait));
-  }
-
-  function timerExpired() {
-    var time = now();
-    if (shouldInvoke(time)) {
-      return trailingEdge(time);
-    }
-    // Restart the timer.
-    timerId = setTimeout(timerExpired, remainingWait(time));
-  }
-
-  function trailingEdge(time) {
-    timerId = undefined;
-
-    // Only invoke if we have `lastArgs` which means `func` has been
-    // debounced at least once.
-    if (trailing && lastArgs) {
-      return invokeFunc(time);
-    }
-    lastArgs = lastThis = undefined;
-    return result;
-  }
-
-  function cancel() {
-    if (timerId !== undefined) {
-      clearTimeout(timerId);
-    }
-    lastInvokeTime = 0;
-    lastArgs = lastCallTime = lastThis = timerId = undefined;
-  }
-
-  function flush() {
-    return timerId === undefined ? result : trailingEdge(now());
-  }
-
-  function debounced() {
-    var time = now(),
-        isInvoking = shouldInvoke(time);
-
-    lastArgs = arguments;
-    lastThis = this;
-    lastCallTime = time;
-
-    if (isInvoking) {
-      if (timerId === undefined) {
-        return leadingEdge(lastCallTime);
-      }
-      if (maxing) {
-        // Handle invocations in a tight loop.
-        timerId = setTimeout(timerExpired, wait);
-        return invokeFunc(lastCallTime);
-      }
-    }
-    if (timerId === undefined) {
-      timerId = setTimeout(timerExpired, wait);
-    }
-    return result;
-  }
-  debounced.cancel = cancel;
-  debounced.flush = flush;
-  return debounced;
-}
-
-/**
- * Creates a throttled function that only invokes `func` at most once per
- * every `wait` milliseconds. The throttled function comes with a `cancel`
- * method to cancel delayed `func` invocations and a `flush` method to
- * immediately invoke them. Provide `options` to indicate whether `func`
- * should be invoked on the leading and/or trailing edge of the `wait`
- * timeout. The `func` is invoked with the last arguments provided to the
- * throttled function. Subsequent calls to the throttled function return the
- * result of the last `func` invocation.
- *
- * **Note:** If `leading` and `trailing` options are `true`, `func` is
- * invoked on the trailing edge of the timeout only if the throttled function
- * is invoked more than once during the `wait` timeout.
- *
- * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
- * until to the next tick, similar to `setTimeout` with a timeout of `0`.
- *
- * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
- * for details over the differences between `_.throttle` and `_.debounce`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to throttle.
- * @param {number} [wait=0] The number of milliseconds to throttle invocations to.
- * @param {Object} [options={}] The options object.
- * @param {boolean} [options.leading=true]
- *  Specify invoking on the leading edge of the timeout.
- * @param {boolean} [options.trailing=true]
- *  Specify invoking on the trailing edge of the timeout.
- * @returns {Function} Returns the new throttled function.
- * @example
- *
- * // Avoid excessively updating the position while scrolling.
- * jQuery(window).on('scroll', _.throttle(updatePosition, 100));
- *
- * // Invoke `renewToken` when the click event is fired, but not more than once every 5 minutes.
- * var throttled = _.throttle(renewToken, 300000, { 'trailing': false });
- * jQuery(element).on('click', throttled);
- *
- * // Cancel the trailing throttled invocation.
- * jQuery(window).on('popstate', throttled.cancel);
- */
-function throttle(func, wait, options) {
-  var leading = true,
-      trailing = true;
-
-  if (typeof func != 'function') {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  if (isObject(options)) {
-    leading = 'leading' in options ? !!options.leading : leading;
-    trailing = 'trailing' in options ? !!options.trailing : trailing;
-  }
-  return debounce(func, wait, {
-    'leading': leading,
-    'maxWait': wait,
-    'trailing': trailing
-  });
-}
-
-/**
- * Checks if `value` is the
- * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
- * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(_.noop);
- * // => true
- *
- * _.isObject(null);
- * // => false
- */
-function isObject(value) {
-  var type = typeof value;
-  return !!value && (type == 'object' || type == 'function');
-}
-
-/**
- * Checks if `value` is object-like. A value is object-like if it's not `null`
- * and has a `typeof` result of "object".
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- * @example
- *
- * _.isObjectLike({});
- * // => true
- *
- * _.isObjectLike([1, 2, 3]);
- * // => true
- *
- * _.isObjectLike(_.noop);
- * // => false
- *
- * _.isObjectLike(null);
- * // => false
- */
-function isObjectLike(value) {
-  return !!value && typeof value == 'object';
-}
-
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
-function isSymbol(value) {
-  return typeof value == 'symbol' ||
-    (isObjectLike(value) && objectToString.call(value) == symbolTag);
-}
-
-/**
- * Converts `value` to a number.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to process.
- * @returns {number} Returns the number.
- * @example
- *
- * _.toNumber(3.2);
- * // => 3.2
- *
- * _.toNumber(Number.MIN_VALUE);
- * // => 5e-324
- *
- * _.toNumber(Infinity);
- * // => Infinity
- *
- * _.toNumber('3.2');
- * // => 3.2
- */
-function toNumber(value) {
-  if (typeof value == 'number') {
-    return value;
-  }
-  if (isSymbol(value)) {
-    return NAN;
-  }
-  if (isObject(value)) {
-    var other = typeof value.valueOf == 'function' ? value.valueOf() : value;
-    value = isObject(other) ? (other + '') : other;
-  }
-  if (typeof value != 'string') {
-    return value === 0 ? value : +value;
-  }
-  value = value.replace(reTrim, '');
-  var isBinary = reIsBinary.test(value);
-  return (isBinary || reIsOctal.test(value))
-    ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
-    : (reIsBadHex.test(value) ? NAN : +value);
-}
-
-module.exports = throttle;
-
-
-/***/ }),
-/* 5 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1172,7 +366,7 @@ exports.RuyoProvider = RuyoProvider;
 
 
 /***/ }),
-/* 6 */
+/* 4 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1192,7 +386,7 @@ exports.MozillaProvider = MozillaProvider;
 
 
 /***/ }),
-/* 7 */
+/* 5 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -1262,7 +456,7 @@ exports.YinXiangProvider = YinXiangProvider;
 
 
 /***/ }),
-/* 8 */
+/* 6 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1295,7 +489,7 @@ exports.CSDNProvider = CSDNProvider;
 
 
 /***/ }),
-/* 9 */
+/* 7 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1315,7 +509,7 @@ exports.OSChinaProvider = OSChinaProvider;
 
 
 /***/ }),
-/* 10 */
+/* 8 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1335,7 +529,7 @@ exports.ZhihuDailyProvider = ZhihuDailyProvider;
 
 
 /***/ }),
-/* 11 */
+/* 9 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1355,7 +549,7 @@ exports.GoogleDocsProvider = GoogleDocsProvider;
 
 
 /***/ }),
-/* 12 */
+/* 10 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1375,7 +569,7 @@ exports.PocketProvider = PocketProvider;
 
 
 /***/ }),
-/* 13 */
+/* 11 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1401,7 +595,7 @@ exports.GmailProvider = GmailProvider;
 
 
 /***/ }),
-/* 14 */
+/* 12 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1425,7 +619,7 @@ exports.JuejinProvider = JuejinProvider;
 
 
 /***/ }),
-/* 15 */
+/* 13 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -1455,7 +649,7 @@ exports.QQMailProvider = QQMailProvider;
 
 
 /***/ }),
-/* 16 */
+/* 14 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1475,7 +669,7 @@ exports.MiJiProvider = MiJiProvider;
 
 
 /***/ }),
-/* 17 */
+/* 15 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1516,7 +710,7 @@ exports.GooglePlayProvider = GooglePlayProvider;
 
 
 /***/ }),
-/* 18 */
+/* 16 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1536,7 +730,7 @@ exports.SteamProvider = SteamProvider;
 
 
 /***/ }),
-/* 19 */
+/* 17 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1571,7 +765,7 @@ exports.TiebaProvider = TiebaProvider;
 
 
 /***/ }),
-/* 20 */
+/* 18 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1603,7 +797,7 @@ exports.TwitterProvider = TwitterProvider;
 
 
 /***/ }),
-/* 21 */
+/* 19 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1611,7 +805,7 @@ exports.TwitterProvider = TwitterProvider;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BaiduVideoProvider = void 0;
 const utils_1 = __webpack_require__(2);
-const gm_http_1 = __webpack_require__(22);
+const gm_http_1 = __webpack_require__(20);
 class BaiduVideoProvider {
     constructor() {
         this.test = /v\.baidu\.com\/link\?url=/;
@@ -1637,7 +831,7 @@ exports.BaiduVideoProvider = BaiduVideoProvider;
 
 
 /***/ }),
-/* 22 */
+/* 20 */
 /***/ (function(module) {
 
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -1843,7 +1037,7 @@ exports.default = http;
 });
 
 /***/ }),
-/* 23 */
+/* 21 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -1870,7 +1064,7 @@ exports.WeboProvider = WeboProvider;
 
 
 /***/ }),
-/* 24 */
+/* 22 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -1887,8 +1081,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BaiduProvider = void 0;
 const utils_1 = __webpack_require__(2);
-const gm_http_1 = __webpack_require__(22);
-const p_retry_1 = __webpack_require__(25);
+const gm_http_1 = __webpack_require__(20);
 class BaiduProvider {
     constructor() {
         this.test = /www\.baidu\.com\/link\?url=/;
@@ -1896,7 +1089,7 @@ class BaiduProvider {
     resolve(aElement) {
         if ((0, utils_1.getRedirect)(aElement) <= 2 && this.test.test(aElement.href)) {
             (0, utils_1.increaseRedirect)(aElement);
-            (0, p_retry_1.default)(() => this.handlerOneElement(aElement), { retries: 3 })
+            (0, utils_1.retryAsyncOperation)(() => this.handlerOneElement(aElement), 3)
                 .then((res) => {
                 (0, utils_1.decreaseRedirect)(aElement);
             })
@@ -1929,439 +1122,7 @@ exports.BaiduProvider = BaiduProvider;
 
 
 /***/ }),
-/* 25 */
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   AbortError: () => (/* binding */ AbortError),
-/* harmony export */   "default": () => (/* binding */ pRetry)
-/* harmony export */ });
-/* harmony import */ var retry__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(26);
-/* harmony import */ var is_network_error__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(29);
-
-
-
-class AbortError extends Error {
-	constructor(message) {
-		super();
-
-		if (message instanceof Error) {
-			this.originalError = message;
-			({message} = message);
-		} else {
-			this.originalError = new Error(message);
-			this.originalError.stack = this.stack;
-		}
-
-		this.name = 'AbortError';
-		this.message = message;
-	}
-}
-
-const decorateErrorWithCounts = (error, attemptNumber, options) => {
-	// Minus 1 from attemptNumber because the first attempt does not count as a retry
-	const retriesLeft = options.retries - (attemptNumber - 1);
-
-	error.attemptNumber = attemptNumber;
-	error.retriesLeft = retriesLeft;
-	return error;
-};
-
-async function pRetry(input, options) {
-	return new Promise((resolve, reject) => {
-		options = {
-			onFailedAttempt() {},
-			retries: 10,
-			shouldRetry: () => true,
-			...options,
-		};
-
-		const operation = retry__WEBPACK_IMPORTED_MODULE_0__.operation(options);
-
-		const abortHandler = () => {
-			operation.stop();
-			reject(options.signal?.reason);
-		};
-
-		if (options.signal && !options.signal.aborted) {
-			options.signal.addEventListener('abort', abortHandler, {once: true});
-		}
-
-		const cleanUp = () => {
-			options.signal?.removeEventListener('abort', abortHandler);
-			operation.stop();
-		};
-
-		operation.attempt(async attemptNumber => {
-			try {
-				const result = await input(attemptNumber);
-				cleanUp();
-				resolve(result);
-			} catch (error) {
-				try {
-					if (!(error instanceof Error)) {
-						throw new TypeError(`Non-error was thrown: "${error}". You should only throw errors.`);
-					}
-
-					if (error instanceof AbortError) {
-						throw error.originalError;
-					}
-
-					if (error instanceof TypeError && !(0,is_network_error__WEBPACK_IMPORTED_MODULE_1__["default"])(error)) {
-						throw error;
-					}
-
-					decorateErrorWithCounts(error, attemptNumber, options);
-
-					if (!(await options.shouldRetry(error))) {
-						operation.stop();
-						reject(error);
-					}
-
-					await options.onFailedAttempt(error);
-
-					if (!operation.retry(error)) {
-						throw operation.mainError();
-					}
-				} catch (finalError) {
-					decorateErrorWithCounts(finalError, attemptNumber, options);
-					cleanUp();
-					reject(finalError);
-				}
-			}
-		});
-	});
-}
-
-
-/***/ }),
-/* 26 */
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-module.exports = __webpack_require__(27);
-
-/***/ }),
-/* 27 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-var RetryOperation = __webpack_require__(28);
-
-exports.operation = function(options) {
-  var timeouts = exports.timeouts(options);
-  return new RetryOperation(timeouts, {
-      forever: options && (options.forever || options.retries === Infinity),
-      unref: options && options.unref,
-      maxRetryTime: options && options.maxRetryTime
-  });
-};
-
-exports.timeouts = function(options) {
-  if (options instanceof Array) {
-    return [].concat(options);
-  }
-
-  var opts = {
-    retries: 10,
-    factor: 2,
-    minTimeout: 1 * 1000,
-    maxTimeout: Infinity,
-    randomize: false
-  };
-  for (var key in options) {
-    opts[key] = options[key];
-  }
-
-  if (opts.minTimeout > opts.maxTimeout) {
-    throw new Error('minTimeout is greater than maxTimeout');
-  }
-
-  var timeouts = [];
-  for (var i = 0; i < opts.retries; i++) {
-    timeouts.push(this.createTimeout(i, opts));
-  }
-
-  if (options && options.forever && !timeouts.length) {
-    timeouts.push(this.createTimeout(i, opts));
-  }
-
-  // sort the array numerically ascending
-  timeouts.sort(function(a,b) {
-    return a - b;
-  });
-
-  return timeouts;
-};
-
-exports.createTimeout = function(attempt, opts) {
-  var random = (opts.randomize)
-    ? (Math.random() + 1)
-    : 1;
-
-  var timeout = Math.round(random * Math.max(opts.minTimeout, 1) * Math.pow(opts.factor, attempt));
-  timeout = Math.min(timeout, opts.maxTimeout);
-
-  return timeout;
-};
-
-exports.wrap = function(obj, options, methods) {
-  if (options instanceof Array) {
-    methods = options;
-    options = null;
-  }
-
-  if (!methods) {
-    methods = [];
-    for (var key in obj) {
-      if (typeof obj[key] === 'function') {
-        methods.push(key);
-      }
-    }
-  }
-
-  for (var i = 0; i < methods.length; i++) {
-    var method   = methods[i];
-    var original = obj[method];
-
-    obj[method] = function retryWrapper(original) {
-      var op       = exports.operation(options);
-      var args     = Array.prototype.slice.call(arguments, 1);
-      var callback = args.pop();
-
-      args.push(function(err) {
-        if (op.retry(err)) {
-          return;
-        }
-        if (err) {
-          arguments[0] = op.mainError();
-        }
-        callback.apply(this, arguments);
-      });
-
-      op.attempt(function() {
-        original.apply(obj, args);
-      });
-    }.bind(obj, original);
-    obj[method].options = options;
-  }
-};
-
-
-/***/ }),
-/* 28 */
-/***/ ((module) => {
-
-function RetryOperation(timeouts, options) {
-  // Compatibility for the old (timeouts, retryForever) signature
-  if (typeof options === 'boolean') {
-    options = { forever: options };
-  }
-
-  this._originalTimeouts = JSON.parse(JSON.stringify(timeouts));
-  this._timeouts = timeouts;
-  this._options = options || {};
-  this._maxRetryTime = options && options.maxRetryTime || Infinity;
-  this._fn = null;
-  this._errors = [];
-  this._attempts = 1;
-  this._operationTimeout = null;
-  this._operationTimeoutCb = null;
-  this._timeout = null;
-  this._operationStart = null;
-  this._timer = null;
-
-  if (this._options.forever) {
-    this._cachedTimeouts = this._timeouts.slice(0);
-  }
-}
-module.exports = RetryOperation;
-
-RetryOperation.prototype.reset = function() {
-  this._attempts = 1;
-  this._timeouts = this._originalTimeouts.slice(0);
-}
-
-RetryOperation.prototype.stop = function() {
-  if (this._timeout) {
-    clearTimeout(this._timeout);
-  }
-  if (this._timer) {
-    clearTimeout(this._timer);
-  }
-
-  this._timeouts       = [];
-  this._cachedTimeouts = null;
-};
-
-RetryOperation.prototype.retry = function(err) {
-  if (this._timeout) {
-    clearTimeout(this._timeout);
-  }
-
-  if (!err) {
-    return false;
-  }
-  var currentTime = new Date().getTime();
-  if (err && currentTime - this._operationStart >= this._maxRetryTime) {
-    this._errors.push(err);
-    this._errors.unshift(new Error('RetryOperation timeout occurred'));
-    return false;
-  }
-
-  this._errors.push(err);
-
-  var timeout = this._timeouts.shift();
-  if (timeout === undefined) {
-    if (this._cachedTimeouts) {
-      // retry forever, only keep last error
-      this._errors.splice(0, this._errors.length - 1);
-      timeout = this._cachedTimeouts.slice(-1);
-    } else {
-      return false;
-    }
-  }
-
-  var self = this;
-  this._timer = setTimeout(function() {
-    self._attempts++;
-
-    if (self._operationTimeoutCb) {
-      self._timeout = setTimeout(function() {
-        self._operationTimeoutCb(self._attempts);
-      }, self._operationTimeout);
-
-      if (self._options.unref) {
-          self._timeout.unref();
-      }
-    }
-
-    self._fn(self._attempts);
-  }, timeout);
-
-  if (this._options.unref) {
-      this._timer.unref();
-  }
-
-  return true;
-};
-
-RetryOperation.prototype.attempt = function(fn, timeoutOps) {
-  this._fn = fn;
-
-  if (timeoutOps) {
-    if (timeoutOps.timeout) {
-      this._operationTimeout = timeoutOps.timeout;
-    }
-    if (timeoutOps.cb) {
-      this._operationTimeoutCb = timeoutOps.cb;
-    }
-  }
-
-  var self = this;
-  if (this._operationTimeoutCb) {
-    this._timeout = setTimeout(function() {
-      self._operationTimeoutCb();
-    }, self._operationTimeout);
-  }
-
-  this._operationStart = new Date().getTime();
-
-  this._fn(this._attempts);
-};
-
-RetryOperation.prototype.try = function(fn) {
-  console.log('Using RetryOperation.try() is deprecated');
-  this.attempt(fn);
-};
-
-RetryOperation.prototype.start = function(fn) {
-  console.log('Using RetryOperation.start() is deprecated');
-  this.attempt(fn);
-};
-
-RetryOperation.prototype.start = RetryOperation.prototype.try;
-
-RetryOperation.prototype.errors = function() {
-  return this._errors;
-};
-
-RetryOperation.prototype.attempts = function() {
-  return this._attempts;
-};
-
-RetryOperation.prototype.mainError = function() {
-  if (this._errors.length === 0) {
-    return null;
-  }
-
-  var counts = {};
-  var mainError = null;
-  var mainErrorCount = 0;
-
-  for (var i = 0; i < this._errors.length; i++) {
-    var error = this._errors[i];
-    var message = error.message;
-    var count = (counts[message] || 0) + 1;
-
-    counts[message] = count;
-
-    if (count >= mainErrorCount) {
-      mainError = error;
-      mainErrorCount = count;
-    }
-  }
-
-  return mainError;
-};
-
-
-/***/ }),
-/* 29 */
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ isNetworkError)
-/* harmony export */ });
-const objectToString = Object.prototype.toString;
-
-const isError = value => objectToString.call(value) === '[object Error]';
-
-const errorMessages = new Set([
-	'network error', // Chrome
-	'Failed to fetch', // Chrome
-	'NetworkError when attempting to fetch resource.', // Firefox
-	'The Internet connection appears to be offline.', // Safari 16
-	'Load failed', // Safari 17+
-	'Network request failed', // `cross-fetch`
-	'fetch failed', // Undici (Node.js)
-	'terminated', // Undici (Node.js)
-]);
-
-function isNetworkError(error) {
-	const isValid = error
-		&& isError(error)
-		&& error.name === 'TypeError'
-		&& typeof error.message === 'string';
-
-	if (!isValid) {
-		return false;
-	}
-
-	// We do an extra check for Safari 17+ as it has a very generic error message.
-	// Network errors in Safari have no stack.
-	if (error.message === 'Load failed') {
-		return error.stack === undefined;
-	}
-
-	return errorMessages.has(error.message);
-}
-
-
-/***/ }),
-/* 30 */
+/* 23 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2378,7 +1139,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DogeDogeProvider = void 0;
 const utils_1 = __webpack_require__(2);
-const gm_http_1 = __webpack_require__(22);
+const gm_http_1 = __webpack_require__(20);
 class DogeDogeProvider {
     constructor() {
         this.test = /www\.dogedoge\.com\/rd\/.{1,}/;
@@ -2418,7 +1179,7 @@ exports.DogeDogeProvider = DogeDogeProvider;
 
 
 /***/ }),
-/* 31 */
+/* 24 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2438,7 +1199,7 @@ exports.DouBanProvider = DouBanProvider;
 
 
 /***/ }),
-/* 32 */
+/* 25 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2477,7 +1238,7 @@ exports.GoogleProvider = GoogleProvider;
 
 
 /***/ }),
-/* 33 */
+/* 26 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2506,7 +1267,7 @@ exports.JianShuProvider = JianShuProvider;
 
 
 /***/ }),
-/* 34 */
+/* 27 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2532,7 +1293,7 @@ exports.SoProvider = SoProvider;
 
 
 /***/ }),
-/* 35 */
+/* 28 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2549,7 +1310,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SoGouProvider = void 0;
 const utils_1 = __webpack_require__(2);
-const gm_http_1 = __webpack_require__(22);
+const gm_http_1 = __webpack_require__(20);
 class SoGouProvider {
     constructor() {
         this.test = /www\.sogou\.com\/link\?url=/;
@@ -2637,7 +1398,7 @@ exports.SoGouProvider = SoGouProvider;
 
 
 /***/ }),
-/* 36 */
+/* 29 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2657,7 +1418,7 @@ exports.YoutubeProvider = YoutubeProvider;
 
 
 /***/ }),
-/* 37 */
+/* 30 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2677,7 +1438,7 @@ exports.ZhihuProvider = ZhihuProvider;
 
 
 /***/ }),
-/* 38 */
+/* 31 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2700,7 +1461,7 @@ exports.BaiduXueshuProvider = BaiduXueshuProvider;
 
 
 /***/ }),
-/* 39 */
+/* 32 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2720,7 +1481,7 @@ exports.ZhihuZhuanlanProvider = ZhihuZhuanlanProvider;
 
 
 /***/ }),
-/* 40 */
+/* 33 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2740,7 +1501,7 @@ exports.LogonewsProvider = LogonewsProvider;
 
 
 /***/ }),
-/* 41 */
+/* 34 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2760,7 +1521,7 @@ exports.AfDianNetProvider = AfDianNetProvider;
 
 
 /***/ }),
-/* 42 */
+/* 35 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -2793,7 +1554,7 @@ exports.Blog51CTO = Blog51CTO;
 
 
 /***/ }),
-/* 43 */
+/* 36 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2813,7 +1574,7 @@ exports.InfoQProvider = InfoQProvider;
 
 
 /***/ }),
-/* 44 */
+/* 37 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2833,7 +1594,7 @@ exports.GiteeProvider = GiteeProvider;
 
 
 /***/ }),
-/* 45 */
+/* 38 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2853,7 +1614,7 @@ exports.SSPaiProvider = SSPaiProvider;
 
 
 /***/ }),
-/* 46 */
+/* 39 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -2907,47 +1668,6 @@ exports.BingProvider = BingProvider;
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/global */
-/******/ 	(() => {
-/******/ 		__webpack_require__.g = (function() {
-/******/ 			if (typeof globalThis === 'object') return globalThis;
-/******/ 			try {
-/******/ 				return this || new Function('return this')();
-/******/ 			} catch (e) {
-/******/ 				if (typeof window === 'object') return window;
-/******/ 			}
-/******/ 		})();
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	(() => {
-/******/ 		// define __esModule on exports
-/******/ 		__webpack_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/************************************************************************/
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
@@ -2956,43 +1676,43 @@ var exports = __webpack_exports__;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const app_1 = __webpack_require__(1);
-const _51_ruyo_net_1 = __webpack_require__(5);
-const addons_mozilla_org_1 = __webpack_require__(6);
-const app_yinxiang_com_1 = __webpack_require__(7);
-const blog_csdn_net_1 = __webpack_require__(8);
-const oschina_com_1 = __webpack_require__(9);
-const daily_zhihu_com_1 = __webpack_require__(10);
-const docs_google_com_1 = __webpack_require__(11);
-const getpocket_com_1 = __webpack_require__(12);
-const gmail_google_com_1 = __webpack_require__(13);
-const juejin_com_1 = __webpack_require__(14);
-const mail_qq_com_1 = __webpack_require__(15);
-const mijisou_com_1 = __webpack_require__(16);
-const play_google_com_1 = __webpack_require__(17);
-const steamcommunity_com_1 = __webpack_require__(18);
-const tieba_baidu_com_1 = __webpack_require__(19);
-const twitter_com_1 = __webpack_require__(20);
-const video_baidu_com_1 = __webpack_require__(21);
-const weibo_com_1 = __webpack_require__(23);
-const www_baidu_com_1 = __webpack_require__(24);
-const www_dogedoge_com_1 = __webpack_require__(30);
-const www_douban_com_1 = __webpack_require__(31);
-const www_google_com_1 = __webpack_require__(32);
-const www_jianshu_com_1 = __webpack_require__(33);
-const www_so_com_1 = __webpack_require__(34);
-const www_sogou_com_1 = __webpack_require__(35);
-const www_youtube_com_1 = __webpack_require__(36);
-const www_zhihu_com_1 = __webpack_require__(37);
-const xueshu_baidu_com_1 = __webpack_require__(38);
-const zhuanlan_zhihu_com_1 = __webpack_require__(39);
-const www_logonews_cn_1 = __webpack_require__(40);
-const afadian_net_1 = __webpack_require__(41);
-const blog_51cto_com_1 = __webpack_require__(42);
-const infoq_cn_1 = __webpack_require__(43);
-const gitee_com_1 = __webpack_require__(44);
-const sspai_com_1 = __webpack_require__(45);
-const bing_com_1 = __webpack_require__(46);
-const gm_http_1 = __webpack_require__(22);
+const _51_ruyo_net_1 = __webpack_require__(3);
+const addons_mozilla_org_1 = __webpack_require__(4);
+const app_yinxiang_com_1 = __webpack_require__(5);
+const blog_csdn_net_1 = __webpack_require__(6);
+const oschina_com_1 = __webpack_require__(7);
+const daily_zhihu_com_1 = __webpack_require__(8);
+const docs_google_com_1 = __webpack_require__(9);
+const getpocket_com_1 = __webpack_require__(10);
+const gmail_google_com_1 = __webpack_require__(11);
+const juejin_com_1 = __webpack_require__(12);
+const mail_qq_com_1 = __webpack_require__(13);
+const mijisou_com_1 = __webpack_require__(14);
+const play_google_com_1 = __webpack_require__(15);
+const steamcommunity_com_1 = __webpack_require__(16);
+const tieba_baidu_com_1 = __webpack_require__(17);
+const twitter_com_1 = __webpack_require__(18);
+const video_baidu_com_1 = __webpack_require__(19);
+const weibo_com_1 = __webpack_require__(21);
+const www_baidu_com_1 = __webpack_require__(22);
+const www_dogedoge_com_1 = __webpack_require__(23);
+const www_douban_com_1 = __webpack_require__(24);
+const www_google_com_1 = __webpack_require__(25);
+const www_jianshu_com_1 = __webpack_require__(26);
+const www_so_com_1 = __webpack_require__(27);
+const www_sogou_com_1 = __webpack_require__(28);
+const www_youtube_com_1 = __webpack_require__(29);
+const www_zhihu_com_1 = __webpack_require__(30);
+const xueshu_baidu_com_1 = __webpack_require__(31);
+const zhuanlan_zhihu_com_1 = __webpack_require__(32);
+const www_logonews_cn_1 = __webpack_require__(33);
+const afadian_net_1 = __webpack_require__(34);
+const blog_51cto_com_1 = __webpack_require__(35);
+const infoq_cn_1 = __webpack_require__(36);
+const gitee_com_1 = __webpack_require__(37);
+const sspai_com_1 = __webpack_require__(38);
+const bing_com_1 = __webpack_require__(39);
+const gm_http_1 = __webpack_require__(20);
 const app = new app_1.App();
 const isDebug = "production" !== "production";
 gm_http_1.default.setConfig({ debug: isDebug });

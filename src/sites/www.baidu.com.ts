@@ -1,7 +1,6 @@
 import { IProvider } from "@/provider";
-import { antiRedirect, decreaseRedirect, getRedirect, increaseRedirect } from "@/utils";
+import { antiRedirect, decreaseRedirect, getRedirect, increaseRedirect, retryAsyncOperation } from "@/utils";
 import http from "gm-http";
-import pRetry from "p-retry";
 
 export class BaiduProvider implements IProvider {
   public test = /www\.baidu\.com\/link\?url=/;
@@ -9,7 +8,7 @@ export class BaiduProvider implements IProvider {
     if (getRedirect(aElement) <= 2 && this.test.test(aElement.href)) {
       increaseRedirect(aElement);
 
-      pRetry(() => this.handlerOneElement(aElement), { retries: 3 })
+      retryAsyncOperation(() => this.handlerOneElement(aElement), 3)
         .then((res) => {
           decreaseRedirect(aElement);
         })
