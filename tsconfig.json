@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "module": "none",
-    "target": "ES2015",
+    "target": "ES2017",
     "lib": ["es6", "dom", "DOM.Iterable"],
     "moduleResolution": "node",
     "sourceMap": true,

@@ -2,9 +2,9 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间
-// @version           1.9.1
+// @version           1.9.2
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-03 17:09:59
+// @update            2024-07-03 17:22:15
 // @grant             GM_xmlhttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
@@ -59,19 +59,10 @@
 /******/ 	var __webpack_modules__ = ([
 /* 0 */,
 /* 1 */
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.App = void 0;
 const utils_1 = __webpack_require__(2);
@@ -125,14 +116,12 @@ class App {
     /**
      * 当页面准备就绪时，进行初始化动作
      */
-    pageOnReady() {
-        return __awaiter(this, void 0, void 0, function* () {
-            for (const provider of this.provides) {
-                if (provider.onInit) {
-                    yield provider.onInit();
-                }
+    async pageOnReady() {
+        for (const provider of this.provides) {
+            if (provider.onInit) {
+                await provider.onInit();
             }
-        });
+        }
     }
     /**
      * 设置配置
@@ -178,19 +167,10 @@ exports.App = App;
 
 /***/ }),
 /* 2 */
-/***/ (function(__unused_webpack_module, exports) {
+/***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Marker = void 0;
 exports.matchLinkFromUrl = matchLinkFromUrl;
@@ -233,25 +213,23 @@ function matchLinkFromUrl(aElement, tester) {
  * @param {number} maxRetries
  * @param {number} currentRetry
  */
-function retryAsyncOperation(operation_1, maxRetries_1) {
-    return __awaiter(this, arguments, void 0, function* (operation, maxRetries, currentRetry = 0) {
-        try {
-            // 尝试执行操作
-            const result = yield operation();
-            return result;
+async function retryAsyncOperation(operation, maxRetries, currentRetry = 0) {
+    try {
+        // 尝试执行操作
+        const result = await operation();
+        return result;
+    }
+    catch (err) {
+        if (currentRetry < maxRetries) {
+            // 如果当前重试次数小于最大重试次数，等待一段时间后重试
+            await new Promise(resolve => setTimeout(resolve, 1000)); // 等待1秒
+            return retryAsyncOperation(operation, maxRetries, currentRetry + 1);
         }
-        catch (err) {
-            if (currentRetry < maxRetries) {
-                // 如果当前重试次数小于最大重试次数，等待一段时间后重试
-                yield new Promise(resolve => setTimeout(resolve, 1000)); // 等待1秒
-                return retryAsyncOperation(operation, maxRetries, currentRetry + 1);
-            }
-            else {
-                // 如果重试次数用尽，抛出错误
-                throw err;
-            }
+        else {
+            // 如果重试次数用尽，抛出错误
+            throw err;
         }
-    });
+    }
 }
 class Query {
     constructor(queryStr) {
@@ -387,19 +365,10 @@ exports.MozillaProvider = MozillaProvider;
 
 /***/ }),
 /* 5 */
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.YinXiangProvider = void 0;
 const utils_1 = __webpack_require__(2);
@@ -427,29 +396,27 @@ class YinXiangProvider {
             (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("dest"));
         }
     }
-    onInit() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const handler = (e) => {
-                const dom = e.target;
-                const tagName = dom.tagName.toUpperCase();
-                switch (tagName) {
-                    case "A": {
-                        this.resolve(dom);
-                        break;
-                    }
-                    case "IFRAME": {
-                        if (dom.hasAttribute("anti-redirect-handled")) {
-                            return;
-                        }
-                        dom.setAttribute("anti-redirect-handled", "1");
-                        dom.contentWindow.document.addEventListener("mouseover", handler);
-                        break;
-                    }
+    async onInit() {
+        const handler = (e) => {
+            const dom = e.target;
+            const tagName = dom.tagName.toUpperCase();
+            switch (tagName) {
+                case "A": {
+                    this.resolve(dom);
+                    break;
                 }
-            };
-            document.addEventListener("mouseover", handler);
-            return this;
-        });
+                case "IFRAME": {
+                    if (dom.hasAttribute("anti-redirect-handled")) {
+                        return;
+                    }
+                    dom.setAttribute("anti-redirect-handled", "1");
+                    dom.contentWindow.document.addEventListener("mouseover", handler);
+                    break;
+                }
+            }
+        };
+        document.addEventListener("mouseover", handler);
+        return this;
     }
 }
 exports.YinXiangProvider = YinXiangProvider;
@@ -1065,19 +1032,10 @@ exports.WeboProvider = WeboProvider;
 
 /***/ }),
 /* 22 */
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BaiduProvider = void 0;
 const utils_1 = __webpack_require__(2);
@@ -1098,24 +1056,22 @@ class BaiduProvider {
             });
         }
     }
-    handlerOneElement(aElement) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const res = yield gm_http_1.default.request({
-                    url: aElement.href,
-                    method: "GET",
-                    anonymous: true,
-                });
-                if (res.finalUrl) {
-                    (0, utils_1.antiRedirect)(aElement, res.finalUrl);
-                }
-                return res;
+    async handlerOneElement(aElement) {
+        try {
+            const res = await gm_http_1.default.request({
+                url: aElement.href,
+                method: "GET",
+                anonymous: true,
+            });
+            if (res.finalUrl) {
+                (0, utils_1.antiRedirect)(aElement, res.finalUrl);
             }
-            catch (err) {
-                console.error(err);
-                return Promise.reject(new Error(`[http]: ${aElement.href} fail`));
-            }
-        });
+            return res;
+        }
+        catch (err) {
+            console.error(err);
+            return Promise.reject(new Error(`[http]: ${aElement.href} fail`));
+        }
     }
 }
 exports.BaiduProvider = BaiduProvider;
@@ -1123,19 +1079,10 @@ exports.BaiduProvider = BaiduProvider;
 
 /***/ }),
 /* 23 */
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DogeDogeProvider = void 0;
 const utils_1 = __webpack_require__(2);
@@ -1156,23 +1103,21 @@ class DogeDogeProvider {
             });
         }
     }
-    handlerOneElement(aElement) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const res = yield gm_http_1.default.request({
-                    url: aElement.href,
-                    method: "GET",
-                    anonymous: true,
-                });
-                if (res.finalUrl) {
-                    (0, utils_1.antiRedirect)(aElement, res.finalUrl);
-                }
-                return res;
+    async handlerOneElement(aElement) {
+        try {
+            const res = await gm_http_1.default.request({
+                url: aElement.href,
+                method: "GET",
+                anonymous: true,
+            });
+            if (res.finalUrl) {
+                (0, utils_1.antiRedirect)(aElement, res.finalUrl);
             }
-            catch (err) {
-                console.error(err);
-            }
-        });
+            return res;
+        }
+        catch (err) {
+            console.error(err);
+        }
     }
 }
 exports.DogeDogeProvider = DogeDogeProvider;
@@ -1294,19 +1239,10 @@ exports.SoProvider = SoProvider;
 
 /***/ }),
 /* 28 */
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SoGouProvider = void 0;
 const utils_1 = __webpack_require__(2);
@@ -1315,34 +1251,32 @@ class SoGouProvider {
     constructor() {
         this.test = /www\.sogou\.com\/link\?url=/;
     }
-    resolve(aElement) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                if ((0, utils_1.getRedirect)(aElement) <= 2 && this.test.test(aElement.href)) {
-                    (0, utils_1.increaseRedirect)(aElement);
-                    const res = yield gm_http_1.default.request({
-                        url: aElement.href,
-                        method: "GET",
-                        anonymous: true,
-                    });
-                    (0, utils_1.decreaseRedirect)(aElement);
-                    const finalUrl = res.finalUrl;
-                    if (finalUrl && !this.test.test(finalUrl)) {
+    async resolve(aElement) {
+        try {
+            if ((0, utils_1.getRedirect)(aElement) <= 2 && this.test.test(aElement.href)) {
+                (0, utils_1.increaseRedirect)(aElement);
+                const res = await gm_http_1.default.request({
+                    url: aElement.href,
+                    method: "GET",
+                    anonymous: true,
+                });
+                (0, utils_1.decreaseRedirect)(aElement);
+                const finalUrl = res.finalUrl;
+                if (finalUrl && !this.test.test(finalUrl)) {
+                    (0, utils_1.antiRedirect)(aElement, res.finalUrl);
+                }
+                else {
+                    const matcher = res.responseText.match(/URL=['"]([^'"]+)['"]/);
+                    if (matcher === null || matcher === void 0 ? void 0 : matcher[1]) {
                         (0, utils_1.antiRedirect)(aElement, res.finalUrl);
-                    }
-                    else {
-                        const matcher = res.responseText.match(/URL=['"]([^'"]+)['"]/);
-                        if (matcher === null || matcher === void 0 ? void 0 : matcher[1]) {
-                            (0, utils_1.antiRedirect)(aElement, res.finalUrl);
-                        }
                     }
                 }
             }
-            catch (err) {
-                (0, utils_1.decreaseRedirect)(aElement);
-                console.error(err);
-            }
-        });
+        }
+        catch (err) {
+            (0, utils_1.decreaseRedirect)(aElement);
+            console.error(err);
+        }
     }
     parsePage(res) {
         const responseText = res.responseText.replace(/(src=[^>]*|link=[^>])/g, "");
@@ -1374,24 +1308,22 @@ class SoGouProvider {
             }
         }
     }
-    onInit() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!/www\.sogou\.com\/web/.test(window.top.location.href)) {
-                return;
-            }
-            const query = (0, utils_1.queryParser)(window.top.location.search);
-            // 搜索使用http搜索，得到的是直接链接
-            const url = `${location.protocol.replace(/:$/, "").replace("s", "")}://${location.host + location.pathname + query}`;
-            gm_http_1.default
-                .get(url)
-                .then((res) => {
-                this.parsePage(res);
-            })
-                .catch((err) => {
-                console.error(err);
-            });
-            return this;
+    async onInit() {
+        if (!/www\.sogou\.com\/web/.test(window.top.location.href)) {
+            return;
+        }
+        const query = (0, utils_1.queryParser)(window.top.location.search);
+        // 搜索使用http搜索，得到的是直接链接
+        const url = `${location.protocol.replace(/:$/, "").replace("s", "")}://${location.host + location.pathname + query}`;
+        gm_http_1.default
+            .get(url)
+            .then((res) => {
+            this.parsePage(res);
+        })
+            .catch((err) => {
+            console.error(err);
         });
+        return this;
     }
 }
 exports.SoGouProvider = SoGouProvider;
