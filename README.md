@@ -1,8 +1,3 @@
-[![Build Status](https://github.com/axetroy/anti-redirect/workflows/build/badge.svg)](https://github.com/axetroy/anti-redirect/actions)
-[![DeepScan grade](https://deepscan.io/api/teams/5773/projects/7595/branches/79869/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=5773&pid=7595&bid=79869)
-[![996.icu](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
-[![LICENSE](https://img.shields.io/badge/license-Anti%20996-blue.svg)](https://github.com/996icu/996.ICU/blob/master/LICENSE)
-
 ### GM 脚本，反重定向
 
 去除各搜索引擎/常用网站的重定向
@@ -18,17 +13,11 @@
 
 > 反馈最好能带上出问题的网页地址
 
-- https://github.com/axetroy/anti-redirect/issues/new/choose
-- https://github.com/axetroy/anti-redirect/issues/new/choose
-- https://github.com/axetroy/anti-redirect/issues/new/choose
+- [https://github.com/MerielVaren/remove-link-redirects/issues/new/choose](https://github.com/MerielVaren/remove-link-redirects/issues/new/choose)
 
 ### 如果这能够帮助到你, 不妨点个 star, 你的支持就是我更新的动力
 
-[点击从 Github 安装](https://github.com/axetroy/anti-redirect/raw/gh-pages/anti-redirect.user.js)
-
-[点击从 GreasyFork 安装](https://greasyfork.org/scripts/11915-anti-redirect-typescript/code/anti-redirect.user.js)
-
-[点击从 CDN 安装(国内用户)](https://cdn.jsdelivr.net/gh/axetroy/anti-redirect@gh-pages/anti-redirect.user.js)
+[点击从 GreasyFork 安装](https://greasyfork.org/zh-CN/scripts/483475-去除链接重定向/code/去除链接重定向.user.js)
 
 ### 工作原理
 
@@ -37,10 +26,6 @@
 3.  逐一发送请求，获取真实的地址，例如百度搜索
 4.  根据请求特殊页面，这个特殊页面没有重定向地址，然后覆盖当前页，例如百度搜索，搜狗搜索
 5.  覆盖原本的链接点击事件，比如 qq 邮箱
-
-### 更新日志
-
-[https://github.com/axetroy/anti-redirect/blob/master/CHANGELOG.md](https://github.com/axetroy/anti-redirect/blob/master/CHANGELOG.md)
 
 ### 支持的站点
 
@@ -87,7 +72,7 @@
 
 ### 我想支持更多的站点
 
-点击这个[链接](https://github.com/axetroy/anti-redirect/issues/new)，提交 issues，说出你想要支持的站点
+点击这个[链接](https://github.com/MerielVaren/remove-link-redirects/issues/new/)，提交 issues，说出你想要支持的站点
 
 ### 贡献代码
 
@@ -101,11 +86,3 @@ cd ./anti-redirect
 npm install
 npm run watch
 ```
-
-### 开源许可
-
-The [Anti 996 License](https://github.com/axetroy/anti-redirect/blob/master/LICENSE)
-
-请仔细阅读开源许可。
-
-简而言之： 如果你正在 996，或者你的公司/单位正在 996 ，那么请不要安装这个脚本！
