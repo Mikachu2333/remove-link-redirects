@@ -34,6 +34,7 @@ import { Blog51CTO } from "@/sites/blog.51cto.com";
 import { InfoQProvider } from "@/sites/infoq.cn";
 import { GiteeProvider } from "@/sites/gitee.com";
 import { SSPaiProvider } from "@/sites/sspai.com";
+import { BingProvider } from "@/sites/bing.com";
 import http from "gm-http";
 
 const app = new App();
@@ -237,21 +238,27 @@ app
     },
     {
       // 测试地址: https://xie.infoq.cn/link?target=https%3A%2F%2Fwww.finclip.com%2F%3Fchannel%3Dinfoqseo
-      name: 'InfoQ',
+      name: "InfoQ",
       test: /infoq\.cn/,
-      provider: InfoQProvider
+      provider: InfoQProvider,
     },
     {
       // 测试地址: https://gitee.com/Tencent/ncnn
-      name: 'Gitee',
+      name: "Gitee",
       test: /gitee.com/,
-      provider: GiteeProvider
+      provider: GiteeProvider,
     },
     {
       // 测试地址: https://sspai.com/post/77499
-      name: '少数派',
+      name: "少数派",
       test: /sspai\.com/,
-      provider: SSPaiProvider
-    }
+      provider: SSPaiProvider,
+    },
+    {
+      // 测试地址: https://www.bing.com/ck/a?&u=a1
+      name: "Bing",
+      test: /bing\.com/,
+      provider: BingProvider,
+    },
   ])
   .bootstrap();
