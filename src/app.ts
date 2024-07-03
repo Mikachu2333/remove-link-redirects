@@ -72,25 +72,6 @@ export class App {
         await provider.onInit();
       }
     }
-    new MutationObserver((mutationsList) => {
-      for (const mutation of mutationsList) {
-        if (mutation.type === "childList") {
-          for (const node of mutation.addedNodes) {
-            if (node instanceof HTMLAnchorElement) {
-              for (const provider of this.provides) {
-                if (this.isMatchProvider(node, provider)) {
-                  provider.resolve(node);
-                  break;
-                }
-              }
-            }
-          }
-        }
-      }
-    }).observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-    });
   }
   /**
    * 设置配置
