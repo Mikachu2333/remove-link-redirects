@@ -3,7 +3,7 @@
     "baseUrl": ".",
     "module": "none",
     "target": "ES2015",
-    "lib": ["es6", "dom"],
+    "lib": ["es6", "dom", "DOM.Iterable"],
     "moduleResolution": "node",
     "sourceMap": true,
     "typeRoots": ["node_modules/@types"],

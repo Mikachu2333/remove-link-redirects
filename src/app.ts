@@ -16,22 +16,33 @@ export interface IAppConfig {
 export class App {
   private config: IAppConfig;
   private provides: IProvider[] = [];
+  private mutationObserver: MutationObserver = new MutationObserver((mutationsList) => {
+    for (const mutation of mutationsList) {
+      if (mutation.type === "childList") {
+        for (const node of mutation.addedNodes) {
+          if (node instanceof HTMLAnchorElement) {
+            for (const provider of this.provides) {
+              if (this.isMatchProvider(node, provider)) {
+                provider.resolve(node);
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
   constructor() {
-    console.log(
-      "%c Anti-Redirect %c Copyright \xa9 2015-%s %s",
-      'font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;font-size:64px;color:#00bbee;-webkit-text-fill-color:#00bbee;-webkit-text-stroke: 1px #00bbee;',
-      "font-size:12px;color:#999999;",
-      new Date().getFullYear(),
-      "\n" + "Author @Axetroy",
-    );
-    console.log("[Anti Redirect]: 如果发现页面重定向未去除，欢迎反馈!");
-    console.log(
-      `%c[Anti Redirect]: 支付宝搜索 "%c511118132%c" 领取红包支持作者!`,
-      "font-size: 12px;",
-      "font-size: 16px;color: red",
-      "font-size: 12px;",
-    );
+    this.config = {
+      isDebug: false,
+    };
+    this.mutationObserver.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
   }
+
   /**
    * A 标签是否匹配服务提供者
    * @param aElement
@@ -53,43 +64,6 @@ export class App {
     return true;
   }
   /**
-   * 当鼠标移动到 A 标签上时
-   * @param event
-   */
-  @throttleDecorator(50)
-  private onHover(event: Event) {
-    const aElement: HTMLAnchorElement = event.target as HTMLAnchorElement;
-    if (aElement.tagName !== "A") {
-      return;
-    }
-    // trigger on hover handler
-    for (const provider of this.provides) {
-      if (this.isMatchProvider(aElement, provider)) {
-        provider.resolve(aElement);
-      }
-    }
-  }
-  /**
-   * 当页面滚动时
-   */
-  @debounceDecorator(300)
-  private onScroll() {
-    // 筛选所有在可视区域内的A标签
-    const visibleElements: HTMLAnchorElement[] = [].slice
-      .call(document.querySelectorAll("a[href]"))
-      .filter((aElement: HTMLAnchorElement) => {
-        return aElement.href.indexOf("http") > -1 && isInView(aElement) && getRedirect(aElement) <= 2;
-      });
-    // trigger scroll handler
-    for (const provider of this.provides) {
-      for (const aElement of visibleElements) {
-        if (this.isMatchProvider(aElement, provider)) {
-          provider.resolve(aElement);
-        }
-      }
-    }
-  }
-  /**
    * 当页面准备就绪时，进行初始化动作
    */
   private async pageOnReady() {
@@ -97,11 +71,26 @@ export class App {
       if (provider.onInit) {
         await provider.onInit();
       }
-      // 如果页面处于初始的状态，没有滚动过，则出发一次onScroll事件
-      if (window.scrollY <= 0) {
-        this.onScroll();
-      }
     }
+    new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === "childList") {
+          for (const node of mutation.addedNodes) {
+            if (node instanceof HTMLAnchorElement) {
+              for (const provider of this.provides) {
+                if (this.isMatchProvider(node, provider)) {
+                  provider.resolve(node);
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+    }).observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
   }
   /**
    * 设置配置
@@ -132,8 +121,6 @@ export class App {
       const provider = new provideConfig.provider();
       provider.isDebug = this.config.isDebug;
       this.provides.push(provider);
-      console.info(`[Anti-redirect]: 加载引擎 ${provideConfig.name}`);
-      console.info(`当前页面: '${location.href}'`);
     }
     return this;
   }
@@ -141,8 +128,6 @@ export class App {
    * 启动应用
    */
   public bootstrap() {
-    addEventListener("scroll", this.onScroll.bind(this));
-    addEventListener("mousemove", this.onHover.bind(this));
     addEventListener("DOMContentLoaded", this.pageOnReady.bind(this));
   }
 }

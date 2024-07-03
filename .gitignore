@@ -83,7 +83,6 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
-dist
 .idea
 yarn.lock
 package-lock.json
