@@ -1,9 +1,11 @@
 {
   "pluginname": "去除链接重定向",
-  "version": "1.9.3",
+  "version": "1.9.4",
   "description": "去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间",
   "main": "./dist/去除链接重定向.user.js",
   "namespace": "Violentmonkey Scripts",
+  "supportURL": "https://github.com/MerielVaren/remove-link-redirects/issues/new/choose",
+  "homepage": "https://github.com/MerielVaren/remove-link-redirects",
   "scripts": {
     "test": "npm run build",
     "build": "cross-env NODE_ENV=production webpack --progress",

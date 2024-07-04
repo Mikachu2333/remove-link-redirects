@@ -94,8 +94,8 @@ const webpackConfig: webpack.Configuration = {
 // @match             *://*.bing.com/*
 // @connect           www.baidu.com
 // @connect           *
-// @supportURL        https://github.com/MerielVaren/anti-redirect/issues/new/choose
-// @homepage          https://github.com/MerielVaren/anti-redirect
+// @supportURL        ${pkg.supportURL}
+// @homepage          ${pkg.homepage}
 // @run-at            document-start
 // @namespace         https://greasyfork.org/zh-CN/users/876245-meriel-varen
 // @license           MIT
