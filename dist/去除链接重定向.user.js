@@ -2,9 +2,9 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间
-// @version           1.9.2
+// @version           1.9.3
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-03 17:22:15
+// @update            2024-07-04 08:21:06
 // @grant             GM_xmlhttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
@@ -1557,10 +1557,9 @@ const utils_1 = __webpack_require__(2);
 class BingProvider {
     constructor() {
         this.test = /.+\.bing\.com\/ck\/a\?.*&u=a1(.*)&ntb=1/;
-        this.textDecoder = new TextDecoder();
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, this.textDecoder.decode(Uint8Array.from(atob(aElement.href
+        (0, utils_1.antiRedirect)(aElement, BingProvider.textDecoder.decode(Uint8Array.from(atob(aElement.href
             .split("&u=a1")[1]
             .split("&ntb=1")[0]
             .replace(/[-_]/g, (e) => ("-" === e ? "+" : "/"))
@@ -1570,6 +1569,7 @@ class BingProvider {
     }
 }
 exports.BingProvider = BingProvider;
+BingProvider.textDecoder = new TextDecoder();
 
 
 /***/ })
