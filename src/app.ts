@@ -16,21 +16,15 @@ export interface IAppConfig {
 export class App {
   private config: IAppConfig;
   private providers: IProvider[] = [];
-  private matchedProvider: IProvider | null = null;
   private mutationObserver: MutationObserver = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       if (mutation.type === "childList") {
         for (const node of mutation.addedNodes) {
           if (node instanceof HTMLAnchorElement) {
-            if (this.matchedProvider) {
-              this.matchedProvider.resolve(node);
-            } else {
-              for (const provider of this.providers) {
-                if (this.isMatchProvider(node, provider)) {
-                  this.matchedProvider = provider;
-                  provider.resolve(node);
-                  break;
-                }
+            for (const provider of this.providers) {
+              if (this.isMatchProvider(node, provider)) {
+                provider.resolve(node);
+                break;
               }
             }
           }

@@ -2,9 +2,9 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间
-// @version           1.9.4
+// @version           1.9.5
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-04 09:20:24
+// @update            2024-07-04 09:22:55
 // @grant             GM_xmlhttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
@@ -69,22 +69,15 @@ const utils_1 = __webpack_require__(2);
 class App {
     constructor() {
         this.providers = [];
-        this.matchedProvider = null;
         this.mutationObserver = new MutationObserver((mutations) => {
             for (const mutation of mutations) {
                 if (mutation.type === "childList") {
                     for (const node of mutation.addedNodes) {
                         if (node instanceof HTMLAnchorElement) {
-                            if (this.matchedProvider) {
-                                this.matchedProvider.resolve(node);
-                            }
-                            else {
-                                for (const provider of this.providers) {
-                                    if (this.isMatchProvider(node, provider)) {
-                                        this.matchedProvider = provider;
-                                        provider.resolve(node);
-                                        break;
-                                    }
+                            for (const provider of this.providers) {
+                                if (this.isMatchProvider(node, provider)) {
+                                    provider.resolve(node);
+                                    break;
                                 }
                             }
                         }
