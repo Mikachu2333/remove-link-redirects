@@ -82,12 +82,12 @@
 
 ### 贡献代码
 
-需要通过 NodeJs 把 TypeScript 编译成 javascript
+需要通过 NodeJs / Deno / Bun 把 TypeScript 编译成 javascript
 
 ```bash
-git clone https://github.com/axetroy/anti-redirect.git
+git clone https://github.com/MerielVaren/remove-link-redirects.git
 
-cd ./anti-redirect
+cd ./remove-link-redirects
 
 npm install
 npm run watch
