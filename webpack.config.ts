@@ -51,7 +51,7 @@ const webpackConfig: webpack.Configuration = {
 // @version           ${pkg.version}
 // @namespace         ${pkg.namespace}
 // @update            ${format(new Date(), "yyyy-MM-dd HH:mm:ss")}
-// @grant             GM_xmlhttpRequest
+// @grant             GM.xmlhttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
 // @match             *://v.baidu.com/*

@@ -1,6 +1,5 @@
 import { IProvider } from "@/provider";
 import { antiRedirect, decreaseRedirect, getRedirect, getText, increaseRedirect, queryParser } from "@/utils";
-import http from "gm-http";
 
 export class SoGouProvider implements IProvider {
   public test = /www\.sogou\.com\/link\?url=/;
@@ -8,9 +7,9 @@ export class SoGouProvider implements IProvider {
     try {
       if (getRedirect(aElement) <= 2 && this.test.test(aElement.href)) {
         increaseRedirect(aElement);
-        const res = await http.request({
-          url: aElement.href,
+        const res = await GM.xmlHttpRequest({
           method: "GET",
+          url: aElement.href,
           anonymous: true,
         });
         decreaseRedirect(aElement);
@@ -29,7 +28,7 @@ export class SoGouProvider implements IProvider {
       console.error(err);
     }
   }
-  private parsePage(res: Response$): void {
+  private parsePage(res: { responseText: string }): void {
     const responseText: string = res.responseText.replace(/(src=[^>]*|link=[^>])/g, "");
     const html: HTMLHtmlElement = document.createElement("html");
     html.innerHTML = responseText;
@@ -73,14 +72,17 @@ export class SoGouProvider implements IProvider {
       location.host + location.pathname + query
     }`;
 
-    http
-      .get(url)
-      .then((res: Response$) => {
+    GM.xmlHttpRequest({
+      method: "GET",
+      url,
+      onload: (res) => {
         this.parsePage(res);
-      })
-      .catch((err) => {
+      },
+      onerror: (err) => {
         console.error(err);
-      });
+      },
+    });
+    
     return this;
   }
 }

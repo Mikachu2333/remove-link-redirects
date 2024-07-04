@@ -1,6 +1,5 @@
 import { IProvider } from "@/provider";
 import { antiRedirect, decreaseRedirect, getRedirect, increaseRedirect, retryAsyncOperation } from "@/utils";
-import http from "gm-http";
 
 export class BaiduProvider implements IProvider {
   public test = /www\.baidu\.com\/link\?url=/;
@@ -19,17 +18,14 @@ export class BaiduProvider implements IProvider {
 
   private async handlerOneElement(aElement: HTMLAnchorElement): Promise<unknown> {
     try {
-      const res = await http.request({
-        url: aElement.href,
+      const res = await GM.xmlHttpRequest({
         method: "GET",
+        url: aElement.href,
         anonymous: true,
       });
-
       if (res.finalUrl) {
         antiRedirect(aElement, res.finalUrl);
       }
-
-      return res;
     } catch (err) {
       console.error(err);
       return Promise.reject(new Error(`[http]: ${aElement.href} fail`));

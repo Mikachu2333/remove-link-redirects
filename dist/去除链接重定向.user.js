@@ -2,10 +2,10 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间
-// @version           1.9.5
+// @version           1.9.6
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-04 09:22:55
-// @grant             GM_xmlhttpRequest
+// @update            2024-07-04 10:02:26
+// @grant             GM.xmlhttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
 // @match             *://v.baidu.com/*
@@ -56,12 +56,12 @@
 // ==/UserScript==
 
 /******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ([
 /* 0 */,
 /* 1 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.App = void 0;
@@ -169,7 +169,6 @@ exports.App = App;
 /* 2 */
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Marker = void 0;
@@ -327,7 +326,6 @@ function antiRedirect(aElement, realUrl, options = {}) {
 /* 3 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RuyoProvider = void 0;
@@ -347,7 +345,6 @@ exports.RuyoProvider = RuyoProvider;
 /* 4 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.MozillaProvider = void 0;
@@ -367,7 +364,6 @@ exports.MozillaProvider = MozillaProvider;
 /* 5 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.YinXiangProvider = void 0;
@@ -426,7 +422,6 @@ exports.YinXiangProvider = YinXiangProvider;
 /* 6 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CSDNProvider = void 0;
@@ -459,7 +454,6 @@ exports.CSDNProvider = CSDNProvider;
 /* 7 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.OSChinaProvider = void 0;
@@ -479,7 +473,6 @@ exports.OSChinaProvider = OSChinaProvider;
 /* 8 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ZhihuDailyProvider = void 0;
@@ -499,7 +492,6 @@ exports.ZhihuDailyProvider = ZhihuDailyProvider;
 /* 9 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.GoogleDocsProvider = void 0;
@@ -519,7 +511,6 @@ exports.GoogleDocsProvider = GoogleDocsProvider;
 /* 10 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PocketProvider = void 0;
@@ -539,7 +530,6 @@ exports.PocketProvider = PocketProvider;
 /* 11 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.GmailProvider = void 0;
@@ -565,7 +555,6 @@ exports.GmailProvider = GmailProvider;
 /* 12 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.JuejinProvider = void 0;
@@ -589,7 +578,6 @@ exports.JuejinProvider = JuejinProvider;
 /* 13 */
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.QQMailProvider = void 0;
@@ -619,7 +607,6 @@ exports.QQMailProvider = QQMailProvider;
 /* 14 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.MiJiProvider = void 0;
@@ -639,7 +626,6 @@ exports.MiJiProvider = MiJiProvider;
 /* 15 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.GooglePlayProvider = void 0;
@@ -680,7 +666,6 @@ exports.GooglePlayProvider = GooglePlayProvider;
 /* 16 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SteamProvider = void 0;
@@ -700,7 +685,6 @@ exports.SteamProvider = SteamProvider;
 /* 17 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TiebaProvider = void 0;
@@ -735,7 +719,6 @@ exports.TiebaProvider = TiebaProvider;
 /* 18 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TwitterProvider = void 0;
@@ -767,30 +750,27 @@ exports.TwitterProvider = TwitterProvider;
 /* 19 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BaiduVideoProvider = void 0;
 const utils_1 = __webpack_require__(2);
-const gm_http_1 = __webpack_require__(20);
 class BaiduVideoProvider {
     constructor() {
         this.test = /v\.baidu\.com\/link\?url=/;
     }
     resolve(aElement) {
-        gm_http_1.default
-            .request({
-            url: aElement.href,
+        GM.xmlHttpRequest({
             method: "GET",
+            url: aElement.href,
             anonymous: true,
-        })
-            .then((res) => {
-            if (res.finalUrl) {
-                (0, utils_1.antiRedirect)(aElement, res.finalUrl);
-            }
-        })
-            .catch((err) => {
-            console.error(err);
+            onload: (res) => {
+                if (res.finalUrl) {
+                    (0, utils_1.antiRedirect)(aElement, res.finalUrl);
+                }
+            },
+            onerror: (err) => {
+                console.error(err);
+            },
         });
     }
 }
@@ -799,215 +779,8 @@ exports.BaiduVideoProvider = BaiduVideoProvider;
 
 /***/ }),
 /* 20 */
-/***/ (function(module) {
-
-(function webpackUniversalModuleDefinition(root, factory) {
-	if(true)
-		module.exports = factory();
-	else {}
-})(this, function() {
-return /******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __nested_webpack_require_535__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __nested_webpack_require_535__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__nested_webpack_require_535__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__nested_webpack_require_535__.c = installedModules;
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__nested_webpack_require_535__.d = function(exports, name, getter) {
-/******/ 		if(!__nested_webpack_require_535__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__nested_webpack_require_535__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__nested_webpack_require_535__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__nested_webpack_require_535__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__nested_webpack_require_535__.p = "";
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __nested_webpack_require_535__(__nested_webpack_require_535__.s = 0);
-/******/ })
-/************************************************************************/
-/******/ ([
-/* 0 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-/**
- * Created by axetroy on 17-6-23.
- */
-/// <reference path="./index.d.ts" />
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-function isFunction(func) {
-    return typeof func === "function";
-}
-var Http = (function () {
-    function Http(config) {
-        if (config === void 0) { config = {}; }
-        this.config = config;
-    }
-    Http.prototype.setConfig = function (config) {
-        if (config === void 0) { config = {}; }
-        this.config = __assign({}, this.config, config);
-    };
-    Http.prototype.create = function (config) {
-        return new Http(config);
-    };
-    Http.prototype.request = function (config) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            var commonRequestConfig = {
-                method: config.method,
-                url: config.url,
-                data: config.body,
-                header: config.headers
-            };
-            var GM_xmlhttpRequestConfig = __assign({}, commonRequestConfig, config, _this.config);
-            var onreadystatechange = GM_xmlhttpRequestConfig.onreadystatechange, onerror = GM_xmlhttpRequestConfig.onerror, onabort = GM_xmlhttpRequestConfig.onabort, ontimeout = GM_xmlhttpRequestConfig.ontimeout;
-            GM_xmlhttpRequestConfig.synchronous = true; // async
-            GM_xmlhttpRequestConfig.onreadystatechange = function (response) {
-                try {
-                    isFunction(onreadystatechange) &&
-                        onreadystatechange.call(this, response);
-                }
-                catch (err) {
-                    reject(err);
-                }
-                if (response.readyState !== 4)
-                    return;
-                response.status >= 200 && response.status < 400
-                    ? resolve(response)
-                    : reject(response);
-            };
-            GM_xmlhttpRequestConfig.onerror = function (response) {
-                try {
-                    isFunction(onerror) && onerror.call(this, response);
-                    reject(response);
-                }
-                catch (err) {
-                    reject(err);
-                }
-            };
-            GM_xmlhttpRequestConfig.onabort = function (response) {
-                try {
-                    isFunction(onabort) && onabort.call(this, response);
-                    reject(response);
-                }
-                catch (err) {
-                    reject(err);
-                }
-            };
-            GM_xmlhttpRequestConfig.ontimeout = function (response) {
-                try {
-                    isFunction(ontimeout) && ontimeout.call(this, response);
-                    reject(response);
-                }
-                catch (err) {
-                    reject(err);
-                }
-            };
-            if (_this.config.debug) {
-                console.log("%c[" + commonRequestConfig.method.toUpperCase() + "]%c: " + commonRequestConfig.url, "color: green", "color: #000;text-style: under-line");
-            }
-            GM_xmlhttpRequest(__assign({}, GM_xmlhttpRequestConfig));
-        });
-    };
-    Http.prototype.get = function (url, data, headers, config) {
-        if (headers === void 0) { headers = {}; }
-        if (config === void 0) { config = {}; }
-        return this.request(__assign({ url: url, method: "GET", body: data, headers: headers }, config));
-    };
-    Http.prototype.post = function (url, data, headers, config) {
-        if (headers === void 0) { headers = {}; }
-        if (config === void 0) { config = {}; }
-        return this.request(__assign({ url: url, method: "POST", body: data, headers: headers }, config));
-    };
-    Http.prototype.put = function (url, data, headers, config) {
-        if (headers === void 0) { headers = {}; }
-        if (config === void 0) { config = {}; }
-        return this.request(__assign({ url: url, method: "POST", body: data, headers: headers }, config));
-    };
-    Http.prototype["delete"] = function (url, data, headers, config) {
-        if (headers === void 0) { headers = {}; }
-        if (config === void 0) { config = {}; }
-        return this.request(__assign({ url: url, method: "DELETE", body: data, headers: headers }, config));
-    };
-    Http.prototype.head = function (url, data, headers, config) {
-        if (headers === void 0) { headers = {}; }
-        if (config === void 0) { config = {}; }
-        return this.request(__assign({ url: url, method: "HEAD", body: data, headers: headers }, config));
-    };
-    return Http;
-}());
-exports.Http = Http;
-var timeout = 5000;
-exports.timeout = timeout;
-var http = new Http({ timeout: timeout });
-exports.http = http;
-exports.default = http;
-
-
-/***/ })
-/******/ ]);
-});
-
-/***/ }),
-/* 21 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.WeboProvider = void 0;
@@ -1031,15 +804,13 @@ exports.WeboProvider = WeboProvider;
 
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BaiduProvider = void 0;
 const utils_1 = __webpack_require__(2);
-const gm_http_1 = __webpack_require__(20);
 class BaiduProvider {
     constructor() {
         this.test = /www\.baidu\.com\/link\?url=/;
@@ -1058,15 +829,14 @@ class BaiduProvider {
     }
     async handlerOneElement(aElement) {
         try {
-            const res = await gm_http_1.default.request({
-                url: aElement.href,
+            const res = await GM.xmlHttpRequest({
                 method: "GET",
+                url: aElement.href,
                 anonymous: true,
             });
             if (res.finalUrl) {
                 (0, utils_1.antiRedirect)(aElement, res.finalUrl);
             }
-            return res;
         }
         catch (err) {
             console.error(err);
@@ -1078,15 +848,13 @@ exports.BaiduProvider = BaiduProvider;
 
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DogeDogeProvider = void 0;
 const utils_1 = __webpack_require__(2);
-const gm_http_1 = __webpack_require__(20);
 class DogeDogeProvider {
     constructor() {
         this.test = /www\.dogedoge\.com\/rd\/.{1,}/;
@@ -1105,18 +873,18 @@ class DogeDogeProvider {
     }
     async handlerOneElement(aElement) {
         try {
-            const res = await gm_http_1.default.request({
-                url: aElement.href,
+            const res = await GM.xmlHttpRequest({
                 method: "GET",
+                url: aElement.href,
                 anonymous: true,
             });
             if (res.finalUrl) {
                 (0, utils_1.antiRedirect)(aElement, res.finalUrl);
             }
-            return res;
         }
         catch (err) {
             console.error(err);
+            return Promise.reject(new Error(`[http]: ${aElement.href} fail`));
         }
     }
 }
@@ -1124,10 +892,9 @@ exports.DogeDogeProvider = DogeDogeProvider;
 
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DouBanProvider = void 0;
@@ -1144,10 +911,9 @@ exports.DouBanProvider = DouBanProvider;
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.GoogleProvider = void 0;
@@ -1183,10 +949,9 @@ exports.GoogleProvider = GoogleProvider;
 
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.JianShuProvider = void 0;
@@ -1212,10 +977,9 @@ exports.JianShuProvider = JianShuProvider;
 
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SoProvider = void 0;
@@ -1238,15 +1002,13 @@ exports.SoProvider = SoProvider;
 
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SoGouProvider = void 0;
 const utils_1 = __webpack_require__(2);
-const gm_http_1 = __webpack_require__(20);
 class SoGouProvider {
     constructor() {
         this.test = /www\.sogou\.com\/link\?url=/;
@@ -1255,9 +1017,9 @@ class SoGouProvider {
         try {
             if ((0, utils_1.getRedirect)(aElement) <= 2 && this.test.test(aElement.href)) {
                 (0, utils_1.increaseRedirect)(aElement);
-                const res = await gm_http_1.default.request({
-                    url: aElement.href,
+                const res = await GM.xmlHttpRequest({
                     method: "GET",
+                    url: aElement.href,
                     anonymous: true,
                 });
                 (0, utils_1.decreaseRedirect)(aElement);
@@ -1315,13 +1077,15 @@ class SoGouProvider {
         const query = (0, utils_1.queryParser)(window.top.location.search);
         // 搜索使用http搜索，得到的是直接链接
         const url = `${location.protocol.replace(/:$/, "").replace("s", "")}://${location.host + location.pathname + query}`;
-        gm_http_1.default
-            .get(url)
-            .then((res) => {
-            this.parsePage(res);
-        })
-            .catch((err) => {
-            console.error(err);
+        GM.xmlHttpRequest({
+            method: "GET",
+            url,
+            onload: (res) => {
+                this.parsePage(res);
+            },
+            onerror: (err) => {
+                console.error(err);
+            },
         });
         return this;
     }
@@ -1330,10 +1094,9 @@ exports.SoGouProvider = SoGouProvider;
 
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.YoutubeProvider = void 0;
@@ -1350,10 +1113,9 @@ exports.YoutubeProvider = YoutubeProvider;
 
 
 /***/ }),
-/* 30 */
+/* 29 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ZhihuProvider = void 0;
@@ -1370,10 +1132,9 @@ exports.ZhihuProvider = ZhihuProvider;
 
 
 /***/ }),
-/* 31 */
+/* 30 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BaiduXueshuProvider = void 0;
@@ -1393,10 +1154,9 @@ exports.BaiduXueshuProvider = BaiduXueshuProvider;
 
 
 /***/ }),
-/* 32 */
+/* 31 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ZhihuZhuanlanProvider = void 0;
@@ -1413,10 +1173,9 @@ exports.ZhihuZhuanlanProvider = ZhihuZhuanlanProvider;
 
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LogonewsProvider = void 0;
@@ -1433,10 +1192,9 @@ exports.LogonewsProvider = LogonewsProvider;
 
 
 /***/ }),
-/* 34 */
+/* 33 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AfDianNetProvider = void 0;
@@ -1453,10 +1211,9 @@ exports.AfDianNetProvider = AfDianNetProvider;
 
 
 /***/ }),
-/* 35 */
+/* 34 */
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Blog51CTO = void 0;
@@ -1486,10 +1243,9 @@ exports.Blog51CTO = Blog51CTO;
 
 
 /***/ }),
-/* 36 */
+/* 35 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.InfoQProvider = void 0;
@@ -1506,10 +1262,9 @@ exports.InfoQProvider = InfoQProvider;
 
 
 /***/ }),
-/* 37 */
+/* 36 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.GiteeProvider = void 0;
@@ -1526,10 +1281,9 @@ exports.GiteeProvider = GiteeProvider;
 
 
 /***/ }),
-/* 38 */
+/* 37 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SSPaiProvider = void 0;
@@ -1546,10 +1300,9 @@ exports.SSPaiProvider = SSPaiProvider;
 
 
 /***/ }),
-/* 39 */
+/* 38 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BingProvider = void 0;
@@ -1591,7 +1344,7 @@ BingProvider.textDecoder = new TextDecoder();
 /******/ 		};
 /******/ 	
 /******/ 		// Execute the module function
-/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
 /******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
@@ -1599,9 +1352,8 @@ BingProvider.textDecoder = new TextDecoder();
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be in strict mode.
+// This entry need to be wrapped in an IIFE because it uses a non-standard name for the exports (exports).
 (() => {
-"use strict";
 var exports = __webpack_exports__;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
@@ -1623,29 +1375,27 @@ const steamcommunity_com_1 = __webpack_require__(16);
 const tieba_baidu_com_1 = __webpack_require__(17);
 const twitter_com_1 = __webpack_require__(18);
 const video_baidu_com_1 = __webpack_require__(19);
-const weibo_com_1 = __webpack_require__(21);
-const www_baidu_com_1 = __webpack_require__(22);
-const www_dogedoge_com_1 = __webpack_require__(23);
-const www_douban_com_1 = __webpack_require__(24);
-const www_google_com_1 = __webpack_require__(25);
-const www_jianshu_com_1 = __webpack_require__(26);
-const www_so_com_1 = __webpack_require__(27);
-const www_sogou_com_1 = __webpack_require__(28);
-const www_youtube_com_1 = __webpack_require__(29);
-const www_zhihu_com_1 = __webpack_require__(30);
-const xueshu_baidu_com_1 = __webpack_require__(31);
-const zhuanlan_zhihu_com_1 = __webpack_require__(32);
-const www_logonews_cn_1 = __webpack_require__(33);
-const afadian_net_1 = __webpack_require__(34);
-const blog_51cto_com_1 = __webpack_require__(35);
-const infoq_cn_1 = __webpack_require__(36);
-const gitee_com_1 = __webpack_require__(37);
-const sspai_com_1 = __webpack_require__(38);
-const bing_com_1 = __webpack_require__(39);
-const gm_http_1 = __webpack_require__(20);
+const weibo_com_1 = __webpack_require__(20);
+const www_baidu_com_1 = __webpack_require__(21);
+const www_dogedoge_com_1 = __webpack_require__(22);
+const www_douban_com_1 = __webpack_require__(23);
+const www_google_com_1 = __webpack_require__(24);
+const www_jianshu_com_1 = __webpack_require__(25);
+const www_so_com_1 = __webpack_require__(26);
+const www_sogou_com_1 = __webpack_require__(27);
+const www_youtube_com_1 = __webpack_require__(28);
+const www_zhihu_com_1 = __webpack_require__(29);
+const xueshu_baidu_com_1 = __webpack_require__(30);
+const zhuanlan_zhihu_com_1 = __webpack_require__(31);
+const www_logonews_cn_1 = __webpack_require__(32);
+const afadian_net_1 = __webpack_require__(33);
+const blog_51cto_com_1 = __webpack_require__(34);
+const infoq_cn_1 = __webpack_require__(35);
+const gitee_com_1 = __webpack_require__(36);
+const sspai_com_1 = __webpack_require__(37);
+const bing_com_1 = __webpack_require__(38);
 const app = new app_1.App();
 const isDebug = "production" !== "production";
-gm_http_1.default.setConfig({ debug: isDebug });
 app
     .setConfig({ isDebug })
     .registerProvider([

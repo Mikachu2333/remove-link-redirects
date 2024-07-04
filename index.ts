@@ -35,12 +35,9 @@ import { InfoQProvider } from "@/sites/infoq.cn";
 import { GiteeProvider } from "@/sites/gitee.com";
 import { SSPaiProvider } from "@/sites/sspai.com";
 import { BingProvider } from "@/sites/bing.com";
-import http from "gm-http";
 
 const app = new App();
 const isDebug: boolean = process.env.NODE_ENV !== "production";
-
-http.setConfig({ debug: isDebug });
 
 app
   .setConfig({ isDebug })
