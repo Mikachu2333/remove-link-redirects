@@ -4,7 +4,7 @@
 // @description       去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间
 // @version           1.9.4
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-04 08:24:16
+// @update            2024-07-04 09:20:24
 // @grant             GM_xmlhttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
@@ -68,16 +68,23 @@ exports.App = void 0;
 const utils_1 = __webpack_require__(2);
 class App {
     constructor() {
-        this.provides = [];
-        this.mutationObserver = new MutationObserver((mutationsList) => {
-            for (const mutation of mutationsList) {
+        this.providers = [];
+        this.matchedProvider = null;
+        this.mutationObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
                 if (mutation.type === "childList") {
                     for (const node of mutation.addedNodes) {
                         if (node instanceof HTMLAnchorElement) {
-                            for (const provider of this.provides) {
-                                if (this.isMatchProvider(node, provider)) {
-                                    provider.resolve(node);
-                                    break;
+                            if (this.matchedProvider) {
+                                this.matchedProvider.resolve(node);
+                            }
+                            else {
+                                for (const provider of this.providers) {
+                                    if (this.isMatchProvider(node, provider)) {
+                                        this.matchedProvider = provider;
+                                        provider.resolve(node);
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -117,7 +124,7 @@ class App {
      * 当页面准备就绪时，进行初始化动作
      */
     async pageOnReady() {
-        for (const provider of this.provides) {
+        for (const provider of this.providers) {
             if (provider.onInit) {
                 await provider.onInit();
             }
@@ -151,7 +158,7 @@ class App {
             }
             const provider = new provideConfig.provider();
             provider.isDebug = this.config.isDebug;
-            this.provides.push(provider);
+            this.providers.push(provider);
         }
         return this;
     }
@@ -1559,13 +1566,11 @@ class BingProvider {
         this.test = /.+\.bing\.com\/ck\/a\?.*&u=a1(.*)&ntb=1/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, BingProvider.textDecoder.decode(Uint8Array.from(atob(aElement.href
+        (0, utils_1.antiRedirect)(aElement, BingProvider.textDecoder.decode(Uint8Array.from(Array.from(atob(aElement.href
             .split("&u=a1")[1]
             .split("&ntb=1")[0]
             .replace(/[-_]/g, (e) => ("-" === e ? "+" : "/"))
-            .replace(/[^A-Za-z0-9\\+\\/]/g, ""))
-            .split("")
-            .map((e) => e.charCodeAt(0)))));
+            .replace(/[^A-Za-z0-9\\+\\/]/g, ""))).map((e) => e.charCodeAt(0)))));
     }
 }
 exports.BingProvider = BingProvider;

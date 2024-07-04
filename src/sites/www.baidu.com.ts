@@ -7,7 +7,6 @@ export class BaiduProvider implements IProvider {
   public resolve(aElement: HTMLAnchorElement) {
     if (getRedirect(aElement) <= 2 && this.test.test(aElement.href)) {
       increaseRedirect(aElement);
-
       retryAsyncOperation(() => this.handlerOneElement(aElement), 3)
         .then((res) => {
           decreaseRedirect(aElement);

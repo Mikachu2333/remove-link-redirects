@@ -9,15 +9,15 @@ export class BingProvider implements IProvider {
       aElement,
       BingProvider.textDecoder.decode(
         Uint8Array.from(
-          atob(
-            aElement.href
-              .split("&u=a1")[1]
-              .split("&ntb=1")[0]
-              .replace(/[-_]/g, (e) => ("-" === e ? "+" : "/"))
-              .replace(/[^A-Za-z0-9\\+\\/]/g, ""),
-          )
-            .split("")
-            .map((e) => e.charCodeAt(0)),
+          Array.from(
+            atob(
+              aElement.href
+                .split("&u=a1")[1]
+                .split("&ntb=1")[0]
+                .replace(/[-_]/g, (e) => ("-" === e ? "+" : "/"))
+                .replace(/[^A-Za-z0-9\\+\\/]/g, ""),
+            ),
+          ).map((e) => e.charCodeAt(0)),
         ),
       ),
     );

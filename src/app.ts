@@ -15,16 +15,22 @@ export interface IAppConfig {
 
 export class App {
   private config: IAppConfig;
-  private provides: IProvider[] = [];
-  private mutationObserver: MutationObserver = new MutationObserver((mutationsList) => {
-    for (const mutation of mutationsList) {
+  private providers: IProvider[] = [];
+  private matchedProvider: IProvider | null = null;
+  private mutationObserver: MutationObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
       if (mutation.type === "childList") {
         for (const node of mutation.addedNodes) {
           if (node instanceof HTMLAnchorElement) {
-            for (const provider of this.provides) {
-              if (this.isMatchProvider(node, provider)) {
-                provider.resolve(node);
-                break;
+            if (this.matchedProvider) {
+              this.matchedProvider.resolve(node);
+            } else {
+              for (const provider of this.providers) {
+                if (this.isMatchProvider(node, provider)) {
+                  this.matchedProvider = provider;
+                  provider.resolve(node);
+                  break;
+                }
               }
             }
           }
@@ -67,7 +73,7 @@ export class App {
    * 当页面准备就绪时，进行初始化动作
    */
   private async pageOnReady() {
-    for (const provider of this.provides) {
+    for (const provider of this.providers) {
       if (provider.onInit) {
         await provider.onInit();
       }
@@ -101,7 +107,7 @@ export class App {
       }
       const provider = new provideConfig.provider();
       provider.isDebug = this.config.isDebug;
-      this.provides.push(provider);
+      this.providers.push(provider);
     }
     return this;
   }

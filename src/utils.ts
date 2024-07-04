@@ -3,9 +3,6 @@ export enum Marker {
   RedirectStatusDone = "anti-redirect-origin-href",
 }
 
-// rome-ignore lint/suspicious/noExplicitAny: allow return anything
-type  DecoratorMethodFunction = (originMethod: Function, context: ClassMemberDecoratorContext) => any;
-
 /**
  * 根据url上的路径匹配，去除重定向
  * @param {HTMLAnchorElement} aElement
@@ -102,7 +99,7 @@ export function isInView(element: HTMLElement): boolean {
   const vWidth = window.innerWidth || document.documentElement.clientWidth;
   const vHeight = window.innerHeight || document.documentElement.clientHeight;
 
-  const efp = (x, y) => {
+  const efp = (x: number, y: number) => {
     return document.elementFromPoint(x, y);
   };
 
