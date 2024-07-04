@@ -77,7 +77,7 @@
 
 ### 我想支持更多的站点
 
-点击这个链接[github反馈区](https://github.com/MerielVaren/remove-link-redirects/issues/new/)，提交 issues，说出你想要支持的站点 `<br>`
+点击这个链接[github反馈区](https://github.com/MerielVaren/remove-link-redirects/issues/new/)，提交 issues，说出你想要支持的站点<br>
 或点击这个链接[greasyfork反馈区](https://greasyfork.org/zh-CN/scripts/483475-%E5%8E%BB%E9%99%A4%E9%93%BE%E6%8E%A5%E9%87%8D%E5%AE%9A%E5%90%91/feedback)
 
 ### 贡献代码
