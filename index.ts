@@ -37,10 +37,8 @@ import { SSPaiProvider } from "@/sites/sspai.com";
 import { BingProvider } from "@/sites/bing.com";
 
 const app = new App();
-const isDebug: boolean = process.env.NODE_ENV !== "production";
 
 app
-  .setConfig({ isDebug })
   .registerProvider([
     {
       // 测试地址: https://www.zhihu.com/question/25258775

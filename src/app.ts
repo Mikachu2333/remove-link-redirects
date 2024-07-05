@@ -9,38 +9,39 @@ interface IProviderConfig {
   provider: IProviderConstructor;
 }
 
-export interface IAppConfig {
-  isDebug: boolean;
-}
-
 export class App {
-  private config: IAppConfig;
   private providers: IProvider[] = [];
   private mutationObserver: MutationObserver = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-      if (mutation.type === "childList") {
-        for (const node of mutation.addedNodes) {
-          if (node instanceof HTMLAnchorElement) {
-            for (const provider of this.providers) {
-              if (this.isMatchProvider(node, provider)) {
-                provider.resolve(node);
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
+    mutations.forEach(this.handleMutation.bind(this));
   });
 
-  constructor() {
-    this.config = {
-      isDebug: false,
-    };
-    this.mutationObserver.observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-    });
+  /**
+   * 处理变动
+   * @param mutation
+   * @returns 
+   * */
+  private handleMutation(mutation: MutationRecord): void {
+    if (mutation.type === "childList") {
+      mutation.addedNodes.forEach((node) => {
+        if (node instanceof HTMLAnchorElement) {
+          this.handleNode(node);
+        }
+      });
+    }
+  }
+
+  /**
+   * 处理节点
+   * @param node
+   * @returns
+   */
+  private handleNode(node: HTMLAnchorElement): void {
+    for (const provider of this.providers) {
+      if (this.isMatchProvider(node, provider)) {
+        provider.resolve(node);
+        break;
+      }
+    }
   }
 
   /**
@@ -63,6 +64,7 @@ export class App {
     }
     return true;
   }
+
   /**
    * 当页面准备就绪时，进行初始化动作
    */
@@ -73,42 +75,36 @@ export class App {
       }
     }
   }
-  /**
-   * 设置配置
-   * @param config
-   */
-  public setConfig(config: IAppConfig): this {
-    this.config = config;
-    return this;
-  }
+
   /**
    * 注册服务提供者
-   * @param providers
+   * @param providerConfigs
    */
-  public registerProvider(providers: IProviderConfig[]): this {
-    for (const provideConfig of providers) {
-      // test 如果是 boolean
-      if (provideConfig.test === false) {
+  public registerProvider(providerConfigs: IProviderConfig[]): this {
+    for (const providerConfig of providerConfigs) {
+      if (providerConfig.test === false) {
         continue;
       }
-      // test 如果是正则表达式
-      if (provideConfig.test instanceof RegExp && !provideConfig.test.test(document.domain)) {
+      if (providerConfig.test instanceof RegExp && !providerConfig.test.test(location.hostname)) {
         continue;
       }
-      // test 如果是一个function
-      if (typeof provideConfig.test === "function" && provideConfig.test() === false) {
+      if (typeof providerConfig.test === "function" && providerConfig.test() === false) {
         continue;
       }
-      const provider = new provideConfig.provider();
-      provider.isDebug = this.config.isDebug;
+      const provider = new providerConfig.provider();
       this.providers.push(provider);
     }
     return this;
   }
+
   /**
    * 启动应用
    */
   public bootstrap() {
     addEventListener("DOMContentLoaded", this.pageOnReady.bind(this));
+    this.mutationObserver.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
   }
 }

@@ -1,6 +1,6 @@
 {
   "pluginname": "去除链接重定向",
-  "version": "1.9.6",
+  "version": "1.9.7",
   "description": "去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间",
   "main": "./dist/去除链接重定向.user.js",
   "namespace": "Violentmonkey Scripts",
@@ -24,17 +24,23 @@
     "redirect"
   ],
   "devDependencies": {
+    "@babel/cli": "^7.24.7",
+    "@babel/core": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
     "@types/node": "18.16.10",
     "@types/tampermonkey": "^5.0.3",
-    "@types/webpack": "5.28.1",
+    "@types/webpack": "^5.28.5",
     "cross-env": "7.0.3",
     "date-fns": "2.29.3",
     "rome": "^12.1.3",
     "ts-loader": "9.4.1",
-    "ts-node": "10.9.1",
+    "ts-node": "^10.9.1",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
-    "typescript": "^5.2.2",
+    "typescript": "^5.5.3",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "uglifyjs-webpack-plugin": "^2.2.0"
   }
 }

@@ -1,15 +1,11 @@
-/**
- * Created by axetroy on 16-9-15.
- */
-
-import { format } from "date-fns";
-import * as path from "path";
-import * as webpack from "webpack";
+const format = require("date-fns/format");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const pkg = require("./package.json");
+const webpack = require("webpack");
+const path = require("path");
 
 // webpack.config.js
-const webpackConfig: webpack.Configuration = {
+const webpackConfig = {
   entry: {
     去除链接重定向: path.join(__dirname, "index.ts"),
   },
@@ -27,22 +23,6 @@ const webpackConfig: webpack.Configuration = {
   },
   mode: "none",
   plugins: [
-    new webpack.DefinePlugin(
-      (() => {
-        const result = { "process.env.NODE_ENV": '"development"' };
-        for (const key in process.env) {
-          // rome-ignore lint/suspicious/noPrototypeBuiltins: <explanation>
-          if (process.env.hasOwnProperty(key)) {
-            result[`process.env.${key}`] = JSON.stringify(process.env[key]);
-          }
-        }
-        return result;
-      })(),
-    ),
-    new webpack.LoaderOptionsPlugin({
-      minimize: true,
-      debug: false,
-    }),
     new webpack.BannerPlugin({
       banner: `// ==UserScript==
 // @name              ${pkg.pluginname}
@@ -92,7 +72,6 @@ const webpackConfig: webpack.Configuration = {
 // @match             *://gitee.com/*
 // @match             *://sspai.com/*
 // @match             *://*.bing.com/*
-// @connect           www.baidu.com
 // @connect           *
 // @supportURL        ${pkg.supportURL}
 // @homepage          ${pkg.homepage}
@@ -103,6 +82,22 @@ const webpackConfig: webpack.Configuration = {
 `,
       entryOnly: true,
       raw: true,
+    }),
+    new webpack.DefinePlugin(
+      (() => {
+        const result = { "process.env.NODE_ENV": '"development"' };
+        for (const key in process.env) {
+          // rome-ignore lint/suspicious/noPrototypeBuiltins: <explanation>
+          if (process.env.hasOwnProperty(key)) {
+            result[`process.env.${key}`] = JSON.stringify(process.env[key]);
+          }
+        }
+        return result;
+      })(),
+    ),
+    new webpack.LoaderOptionsPlugin({
+      minimize: true,
+      debug: false,
     }),
   ],
 };

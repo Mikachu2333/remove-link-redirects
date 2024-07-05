@@ -2,9 +2,9 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间
-// @version           1.9.6
+// @version           1.9.7
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-04 10:02:26
+// @update            2024-07-05 14:29:42
 // @grant             GM.xmlhttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
@@ -46,7 +46,6 @@
 // @match             *://gitee.com/*
 // @match             *://sspai.com/*
 // @match             *://*.bing.com/*
-// @connect           www.baidu.com
 // @connect           *
 // @supportURL        https://github.com/MerielVaren/remove-link-redirects/issues/new/choose
 // @homepage          https://github.com/MerielVaren/remove-link-redirects
@@ -70,28 +69,35 @@ class App {
     constructor() {
         this.providers = [];
         this.mutationObserver = new MutationObserver((mutations) => {
-            for (const mutation of mutations) {
-                if (mutation.type === "childList") {
-                    for (const node of mutation.addedNodes) {
-                        if (node instanceof HTMLAnchorElement) {
-                            for (const provider of this.providers) {
-                                if (this.isMatchProvider(node, provider)) {
-                                    provider.resolve(node);
-                                    break;
-                                }
-                            }
-                        }
-                    }
+            mutations.forEach(this.handleMutation.bind(this));
+        });
+    }
+    /**
+     * 处理变动
+     * @param mutation
+     * @returns
+     * */
+    handleMutation(mutation) {
+        if (mutation.type === "childList") {
+            mutation.addedNodes.forEach((node) => {
+                if (node instanceof HTMLAnchorElement) {
+                    this.handleNode(node);
                 }
+            });
+        }
+    }
+    /**
+     * 处理节点
+     * @param node
+     * @returns
+     */
+    handleNode(node) {
+        for (const provider of this.providers) {
+            if (this.isMatchProvider(node, provider)) {
+                provider.resolve(node);
+                break;
             }
-        });
-        this.config = {
-            isDebug: false,
-        };
-        this.mutationObserver.observe(document.documentElement, {
-            childList: true,
-            subtree: true,
-        });
+        }
     }
     /**
      * A 标签是否匹配服务提供者
@@ -124,33 +130,21 @@ class App {
         }
     }
     /**
-     * 设置配置
-     * @param config
-     */
-    setConfig(config) {
-        this.config = config;
-        return this;
-    }
-    /**
      * 注册服务提供者
-     * @param providers
+     * @param providerConfigs
      */
-    registerProvider(providers) {
-        for (const provideConfig of providers) {
-            // test 如果是 boolean
-            if (provideConfig.test === false) {
+    registerProvider(providerConfigs) {
+        for (const providerConfig of providerConfigs) {
+            if (providerConfig.test === false) {
                 continue;
             }
-            // test 如果是正则表达式
-            if (provideConfig.test instanceof RegExp && !provideConfig.test.test(document.domain)) {
+            if (providerConfig.test instanceof RegExp && !providerConfig.test.test(location.hostname)) {
                 continue;
             }
-            // test 如果是一个function
-            if (typeof provideConfig.test === "function" && provideConfig.test() === false) {
+            if (typeof providerConfig.test === "function" && providerConfig.test() === false) {
                 continue;
             }
-            const provider = new provideConfig.provider();
-            provider.isDebug = this.config.isDebug;
+            const provider = new providerConfig.provider();
             this.providers.push(provider);
         }
         return this;
@@ -160,6 +154,10 @@ class App {
      */
     bootstrap() {
         addEventListener("DOMContentLoaded", this.pageOnReady.bind(this));
+        this.mutationObserver.observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+        });
     }
 }
 exports.App = App;
@@ -176,7 +174,6 @@ exports.matchLinkFromUrl = matchLinkFromUrl;
 exports.retryAsyncOperation = retryAsyncOperation;
 exports.queryParser = queryParser;
 exports.getText = getText;
-exports.isInView = isInView;
 exports.getRedirect = getRedirect;
 exports.increaseRedirect = increaseRedirect;
 exports.decreaseRedirect = decreaseRedirect;
@@ -246,8 +243,7 @@ class Query {
                 key = decodeURIComponent(arr[0] || "");
                 value = decodeURIComponent(arr[1] || "");
             }
-            catch (err) {
-                //
+            catch (_) {
             }
             if (key) {
                 obj[key] = value;
@@ -272,23 +268,6 @@ function queryParser(queryString) {
 function getText(htmlElement) {
     return (htmlElement.innerText || htmlElement.textContent).trim();
 }
-function isInView(element) {
-    const rect = element.getBoundingClientRect();
-    const vWidth = window.innerWidth || document.documentElement.clientWidth;
-    const vHeight = window.innerHeight || document.documentElement.clientHeight;
-    const efp = (x, y) => {
-        return document.elementFromPoint(x, y);
-    };
-    // Return false if it's not in the viewport
-    if (rect.right < 0 || rect.bottom < 0 || rect.left > vWidth || rect.top > vHeight) {
-        return false;
-    }
-    // Return true if any of its four corners are visible
-    return (element.contains(efp(rect.left, rect.top)) ||
-        element.contains(efp(rect.right, rect.top)) ||
-        element.contains(efp(rect.right, rect.bottom)) ||
-        element.contains(efp(rect.left, rect.bottom)));
-}
 function getRedirect(aElement) {
     return +(aElement.getAttribute(Marker.RedirectCount) || 0);
 }
@@ -309,13 +288,8 @@ function decreaseRedirect(aElement) {
  * @param options
  */
 function antiRedirect(aElement, realUrl, options = {}) {
-    options.debug = typeof options.debug === "undefined" ? "production" !== "production" : options.debug;
-    options.force = options.force;
     if (!options.force && (!realUrl || aElement.href === realUrl)) {
         return;
-    }
-    if (options.debug) {
-        aElement.style.backgroundColor = "green";
     }
     aElement.setAttribute(Marker.RedirectStatusDone, aElement.href);
     aElement.href = realUrl;
@@ -1395,9 +1369,7 @@ const gitee_com_1 = __webpack_require__(36);
 const sspai_com_1 = __webpack_require__(37);
 const bing_com_1 = __webpack_require__(38);
 const app = new app_1.App();
-const isDebug = "production" !== "production";
 app
-    .setConfig({ isDebug })
     .registerProvider([
     {
         // 测试地址: https://www.zhihu.com/question/25258775

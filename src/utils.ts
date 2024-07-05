@@ -63,8 +63,7 @@ class Query {
       try {
         key = decodeURIComponent(arr[0] || "");
         value = decodeURIComponent(arr[1] || "");
-      } catch (err) {
-        //
+      } catch (_) {
       }
       if (key) {
         obj[key] = value;
@@ -93,30 +92,6 @@ export function getText(htmlElement: HTMLElement): string {
   return (htmlElement.innerText || htmlElement.textContent).trim();
 }
 
-export function isInView(element: HTMLElement): boolean {
-  const rect = element.getBoundingClientRect();
-
-  const vWidth = window.innerWidth || document.documentElement.clientWidth;
-  const vHeight = window.innerHeight || document.documentElement.clientHeight;
-
-  const efp = (x: number, y: number) => {
-    return document.elementFromPoint(x, y);
-  };
-
-  // Return false if it's not in the viewport
-  if (rect.right < 0 || rect.bottom < 0 || rect.left > vWidth || rect.top > vHeight) {
-    return false;
-  }
-
-  // Return true if any of its four corners are visible
-  return (
-    element.contains(efp(rect.left, rect.top)) ||
-    element.contains(efp(rect.right, rect.top)) ||
-    element.contains(efp(rect.right, rect.bottom)) ||
-    element.contains(efp(rect.left, rect.bottom))
-  );
-}
-
 export function getRedirect(aElement: HTMLAnchorElement): number {
   return +(aElement.getAttribute(Marker.RedirectCount) || 0);
 }
@@ -134,7 +109,6 @@ export function decreaseRedirect(aElement: HTMLAnchorElement): void {
 }
 
 interface IAntiRedirectOption {
-  debug?: boolean;
   force?: boolean;
 }
 
@@ -145,15 +119,8 @@ interface IAntiRedirectOption {
  * @param options
  */
 export function antiRedirect(aElement: HTMLAnchorElement, realUrl: string, options: IAntiRedirectOption = {}) {
-  options.debug = typeof options.debug === "undefined" ? process.env.NODE_ENV !== "production" : options.debug;
-
-  options.force = options.force;
-
   if (!options.force && (!realUrl || aElement.href === realUrl)) {
     return;
-  }
-  if (options.debug) {
-    aElement.style.backgroundColor = "green";
   }
   aElement.setAttribute(Marker.RedirectStatusDone, aElement.href);
   aElement.href = realUrl;
