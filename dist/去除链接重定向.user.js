@@ -2,9 +2,9 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间
-// @version           1.9.9
+// @version           2.0.0
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-05 14:36:22
+// @update            2024-07-05 14:46:13
 // @grant             GM.xmlhttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
