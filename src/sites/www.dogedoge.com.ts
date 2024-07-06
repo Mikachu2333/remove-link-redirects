@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { antiRedirect, decreaseRedirect, getRedirect, increaseRedirect } from "@/utils";
+import { removeLinkRedirect, decreaseRedirect, getRedirect, increaseRedirect } from "@/utils";
 
 export class DogeDogeProvider implements IProvider {
   public test = /www\.dogedoge\.com\/rd\/.{1,}/;
@@ -24,7 +24,7 @@ export class DogeDogeProvider implements IProvider {
         anonymous: true,
       });
       if (res.finalUrl) {
-        antiRedirect(aElement, res.finalUrl);
+        removeLinkRedirect(aElement, res.finalUrl);
       }
     } catch (err) {
       console.error(err);

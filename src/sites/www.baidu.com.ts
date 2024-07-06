@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { antiRedirect, decreaseRedirect, getRedirect, increaseRedirect, retryAsyncOperation } from "@/utils";
+import { removeLinkRedirect, decreaseRedirect, getRedirect, increaseRedirect, retryAsyncOperation } from "@/utils";
 
 export class BaiduProvider implements IProvider {
   public test = /www\.baidu\.com\/link\?url=/;
@@ -24,7 +24,7 @@ export class BaiduProvider implements IProvider {
         anonymous: true,
       });
       if (res.finalUrl) {
-        antiRedirect(aElement, res.finalUrl);
+        removeLinkRedirect(aElement, res.finalUrl);
       }
     } catch (err) {
       console.error(err);

@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { antiRedirect, decreaseRedirect, getRedirect, getText, increaseRedirect, queryParser } from "@/utils";
+import { removeLinkRedirect, decreaseRedirect, getRedirect, getText, increaseRedirect, queryParser } from "@/utils";
 
 export class SoGouProvider implements IProvider {
   public test = /www\.sogou\.com\/link\?url=/;
@@ -15,11 +15,11 @@ export class SoGouProvider implements IProvider {
         decreaseRedirect(aElement);
         const finalUrl = res.finalUrl;
         if (finalUrl && !this.test.test(finalUrl)) {
-          antiRedirect(aElement, res.finalUrl);
+          removeLinkRedirect(aElement, res.finalUrl);
         } else {
           const matcher = res.responseText.match(/URL=['"]([^'"]+)['"]/);
           if (matcher?.[1]) {
-            antiRedirect(aElement, res.finalUrl);
+            removeLinkRedirect(aElement, res.finalUrl);
           }
         }
       }
@@ -57,7 +57,7 @@ export class SoGouProvider implements IProvider {
         if (!localText || localText !== remoteText) {
           return;
         }
-        antiRedirect(localEle, remoteEle.href);
+        removeLinkRedirect(localEle, remoteEle.href);
       }
     }
   }

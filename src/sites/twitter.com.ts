@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { antiRedirect } from "@/utils";
+import { removeLinkRedirect } from "@/utils";
 
 export class TwitterProvider implements IProvider {
   public test = /t\.co\/\w+/;
@@ -11,14 +11,14 @@ export class TwitterProvider implements IProvider {
     if (/https?:\/\//.test(aElement.title)) {
       const url: string = decodeURIComponent(aElement.title);
 
-      antiRedirect(aElement, url);
+      removeLinkRedirect(aElement, url);
       return;
     }
 
     const innerText = aElement.innerText.replace(/…$/, "");
 
     if (/https?:\/\//.test(innerText)) {
-      antiRedirect(aElement, innerText);
+      removeLinkRedirect(aElement, innerText);
       return;
     }
   }

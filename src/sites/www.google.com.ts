@@ -1,4 +1,4 @@
-import { antiRedirect } from "../utils";
+import { removeLinkRedirect } from "../utils";
 import { IProvider } from "@/provider";
 
 export class GoogleProvider implements IProvider {
@@ -21,13 +21,13 @@ export class GoogleProvider implements IProvider {
     // 尝试去除重定向
     if (aElement.getAttribute("data-href")) {
       const realUrl: string = aElement.getAttribute("data-href");
-      antiRedirect(aElement, realUrl);
+      removeLinkRedirect(aElement, realUrl);
     }
 
     const url = new URL(aElement.href);
 
     if (url.searchParams.get("url")) {
-      antiRedirect(aElement, url.searchParams.get("url"));
+      removeLinkRedirect(aElement, url.searchParams.get("url"));
     }
   }
 }

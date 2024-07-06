@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { antiRedirect } from "@/utils";
+import { removeLinkRedirect } from "@/utils";
 export class TiebaProvider implements IProvider {
   public test = /jump\d*\.bdimg\.com/;
   public resolve(aElement: HTMLAnchorElement) {
@@ -16,7 +16,7 @@ export class TiebaProvider implements IProvider {
       url = /https?:\/\//.test(text) ? text : "";
     }
     if (url) {
-      antiRedirect(aElement, url);
+      removeLinkRedirect(aElement, url);
     }
   }
 }

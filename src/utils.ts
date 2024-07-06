@@ -1,6 +1,6 @@
 export enum Marker {
   RedirectCount = "redirect-count",
-  RedirectStatusDone = "anti-redirect-origin-href",
+  RedirectStatusDone = "redirect-status-done",
 }
 
 /**
@@ -30,7 +30,11 @@ export function matchLinkFromUrl(aElement: HTMLAnchorElement, tester: RegExp): s
  * @param {number} maxRetries
  * @param {number} currentRetry
  */
-export async function retryAsyncOperation<T>(operation: () => Promise<T>, maxRetries: number, currentRetry = 0): Promise<T> {
+export async function retryAsyncOperation<T>(
+  operation: () => Promise<T>,
+  maxRetries: number,
+  currentRetry = 0,
+): Promise<T> {
   try {
     // 尝试执行操作
     const result = await operation();
@@ -38,7 +42,7 @@ export async function retryAsyncOperation<T>(operation: () => Promise<T>, maxRet
   } catch (err) {
     if (currentRetry < maxRetries) {
       // 如果当前重试次数小于最大重试次数，等待一段时间后重试
-      await new Promise(resolve => setTimeout(resolve, 1000)); // 等待1秒
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 等待1秒
       return retryAsyncOperation(operation, maxRetries, currentRetry + 1);
     } else {
       // 如果重试次数用尽，抛出错误
@@ -63,8 +67,7 @@ class Query {
       try {
         key = decodeURIComponent(arr[0] || "");
         value = decodeURIComponent(arr[1] || "");
-      } catch (_) {
-      }
+      } catch (_) {}
       if (key) {
         obj[key] = value;
       }
@@ -108,7 +111,7 @@ export function decreaseRedirect(aElement: HTMLAnchorElement): void {
   }
 }
 
-interface IAntiRedirectOption {
+interface IRemoveLinkRedirectOption {
   force?: boolean;
 }
 
@@ -118,7 +121,7 @@ interface IAntiRedirectOption {
  * @param realUrl 真实的地址
  * @param options
  */
-export function antiRedirect(aElement: HTMLAnchorElement, realUrl: string, options: IAntiRedirectOption = {}) {
+export function removeLinkRedirect(aElement: HTMLAnchorElement, realUrl: string, options: IRemoveLinkRedirectOption = {}) {
   if (!options.force && (!realUrl || aElement.href === realUrl)) {
     return;
   }

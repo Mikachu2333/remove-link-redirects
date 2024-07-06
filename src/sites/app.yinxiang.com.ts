@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { antiRedirect } from "@/utils";
+import { removeLinkRedirect } from "@/utils";
 
 export class YinXiangProvider implements IProvider {
   public test = /^http:\/\//;
@@ -7,7 +7,7 @@ export class YinXiangProvider implements IProvider {
     // 编辑器
     if (aElement.hasAttribute("data-mce-href")) {
       if (!aElement.onclick) {
-        antiRedirect(aElement, aElement.href, { force: true });
+        removeLinkRedirect(aElement, aElement.href, { force: true });
         aElement.onclick = (e) => {
           // 阻止事件冒泡, 因为上层元素绑定的click事件会重定向
           if (e.stopPropagation) {
@@ -20,7 +20,7 @@ export class YinXiangProvider implements IProvider {
     }
     // 分享页面
     else if (/^https:\/\/app\.yinxiang\.com\/OutboundRedirect\.action\?dest=/.test(aElement.href)) {
-      antiRedirect(aElement, new URL(aElement.href).searchParams.get("dest"));
+      removeLinkRedirect(aElement, new URL(aElement.href).searchParams.get("dest"));
     }
   }
   public async onInit(): Promise<this> {
@@ -35,10 +35,10 @@ export class YinXiangProvider implements IProvider {
           break;
         }
         case "IFRAME": {
-          if (dom.hasAttribute("anti-redirect-handled")) {
+          if (dom.hasAttribute("redirect-link-removed")) {
             return;
           }
-          dom.setAttribute("anti-redirect-handled", "1");
+          dom.setAttribute("redirect-link-removed", "1");
           (dom as HTMLIFrameElement).contentWindow.document.addEventListener("mouseover", handler);
           break;
         }

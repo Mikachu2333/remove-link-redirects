@@ -2,9 +2,9 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间
-// @version           2.0.0
+// @version           2.0.1
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-05 14:46:13
+// @update            2024-07-06 09:44:40
 // @grant             GM.xmlhttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
@@ -177,11 +177,11 @@ exports.getText = getText;
 exports.getRedirect = getRedirect;
 exports.increaseRedirect = increaseRedirect;
 exports.decreaseRedirect = decreaseRedirect;
-exports.antiRedirect = antiRedirect;
+exports.removeLinkRedirect = removeLinkRedirect;
 var Marker;
 (function (Marker) {
     Marker["RedirectCount"] = "redirect-count";
-    Marker["RedirectStatusDone"] = "anti-redirect-origin-href";
+    Marker["RedirectStatusDone"] = "redirect-status-done";
 })(Marker || (exports.Marker = Marker = {}));
 /**
  * 根据url上的路径匹配，去除重定向
@@ -218,7 +218,7 @@ async function retryAsyncOperation(operation, maxRetries, currentRetry = 0) {
     catch (err) {
         if (currentRetry < maxRetries) {
             // 如果当前重试次数小于最大重试次数，等待一段时间后重试
-            await new Promise(resolve => setTimeout(resolve, 1000)); // 等待1秒
+            await new Promise((resolve) => setTimeout(resolve, 1000)); // 等待1秒
             return retryAsyncOperation(operation, maxRetries, currentRetry + 1);
         }
         else {
@@ -243,8 +243,7 @@ class Query {
                 key = decodeURIComponent(arr[0] || "");
                 value = decodeURIComponent(arr[1] || "");
             }
-            catch (_) {
-            }
+            catch (_) { }
             if (key) {
                 obj[key] = value;
             }
@@ -287,7 +286,7 @@ function decreaseRedirect(aElement) {
  * @param realUrl 真实的地址
  * @param options
  */
-function antiRedirect(aElement, realUrl, options = {}) {
+function removeLinkRedirect(aElement, realUrl, options = {}) {
     if (!options.force && (!realUrl || aElement.href === realUrl)) {
         return;
     }
@@ -309,7 +308,7 @@ class RuyoProvider {
         this.test = /\/[^\?]*\?u=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("u"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("u"));
     }
 }
 exports.RuyoProvider = RuyoProvider;
@@ -328,7 +327,7 @@ class MozillaProvider {
         this.test = /outgoing\.prod\.mozaws\.net\/v\d\/\w+\/(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, (0, utils_1.matchLinkFromUrl)(aElement, this.test));
+        (0, utils_1.removeLinkRedirect)(aElement, (0, utils_1.matchLinkFromUrl)(aElement, this.test));
     }
 }
 exports.MozillaProvider = MozillaProvider;
@@ -350,7 +349,7 @@ class YinXiangProvider {
         // 编辑器
         if (aElement.hasAttribute("data-mce-href")) {
             if (!aElement.onclick) {
-                (0, utils_1.antiRedirect)(aElement, aElement.href, { force: true });
+                (0, utils_1.removeLinkRedirect)(aElement, aElement.href, { force: true });
                 aElement.onclick = (e) => {
                     // 阻止事件冒泡, 因为上层元素绑定的click事件会重定向
                     if (e.stopPropagation) {
@@ -363,7 +362,7 @@ class YinXiangProvider {
         }
         // 分享页面
         else if (/^https:\/\/app\.yinxiang\.com\/OutboundRedirect\.action\?dest=/.test(aElement.href)) {
-            (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("dest"));
+            (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("dest"));
         }
     }
     async onInit() {
@@ -376,10 +375,10 @@ class YinXiangProvider {
                     break;
                 }
                 case "IFRAME": {
-                    if (dom.hasAttribute("anti-redirect-handled")) {
+                    if (dom.hasAttribute("redirect-link-removed")) {
                         return;
                     }
-                    dom.setAttribute("anti-redirect-handled", "1");
+                    dom.setAttribute("redirect-link-removed", "1");
                     dom.contentWindow.document.addEventListener("mouseover", handler);
                     break;
                 }
@@ -409,7 +408,7 @@ class CSDNProvider {
         this.container = document.querySelector("#content_views");
         if ((_a = this.container) === null || _a === void 0 ? void 0 : _a.contains(aElement)) {
             if (!aElement.onclick && aElement.origin !== window.location.origin) {
-                (0, utils_1.antiRedirect)(aElement, aElement.href, { force: true });
+                (0, utils_1.removeLinkRedirect)(aElement, aElement.href, { force: true });
                 aElement.onclick = (e) => {
                     // 阻止事件冒泡, 因为上层元素绑定的click事件会重定向
                     if (e.stopPropagation) {
@@ -437,7 +436,7 @@ class OSChinaProvider {
         this.test = /oschina\.net\/action\/GoToLink\?url=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("url"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("url"));
     }
 }
 exports.OSChinaProvider = OSChinaProvider;
@@ -456,7 +455,7 @@ class ZhihuDailyProvider {
         this.test = /zhihu\.com\/\?target=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
     }
 }
 exports.ZhihuDailyProvider = ZhihuDailyProvider;
@@ -475,7 +474,7 @@ class GoogleDocsProvider {
         this.test = /www\.google\.com\/url\?q=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("q"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("q"));
     }
 }
 exports.GoogleDocsProvider = GoogleDocsProvider;
@@ -494,7 +493,7 @@ class PocketProvider {
         this.test = /getpocket\.com\/redirect\?url=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("url"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("url"));
     }
 }
 exports.PocketProvider = PocketProvider;
@@ -518,7 +517,7 @@ class GmailProvider {
         // FIXME: gmail 是多层 iframe 嵌套
         if (aElement.getAttribute(this.REDIRECT_PROPERTY)) {
             aElement.removeAttribute(this.REDIRECT_PROPERTY);
-            (0, utils_1.antiRedirect)(aElement, aElement.href);
+            (0, utils_1.removeLinkRedirect)(aElement, aElement.href);
         }
     }
 }
@@ -539,7 +538,7 @@ class JuejinProvider {
     }
     resolve(aElement) {
         const finalURL = new URL(aElement.href).searchParams.get("target");
-        (0, utils_1.antiRedirect)(aElement, finalURL);
+        (0, utils_1.removeLinkRedirect)(aElement, finalURL);
         if (this.test.test(aElement.title)) {
             aElement.title = finalURL;
         }
@@ -590,7 +589,7 @@ class MiJiProvider {
         this.test = /mijisou\.com\/url_proxy\?proxyurl=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("proxyurl"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("proxyurl"));
     }
 }
 exports.MiJiProvider = MiJiProvider;
@@ -615,7 +614,7 @@ class GooglePlayProvider {
         return false;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("q"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("q"));
         // 移除开发者栏目下的重定向
         const eles = [].slice.call(document.querySelectorAll("a.hrTbp"));
         for (const ele of eles) {
@@ -649,7 +648,7 @@ class SteamProvider {
         this.test = /steamcommunity\.com\/linkfilter\/\?url=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("url"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("url"));
     }
 }
 exports.SteamProvider = SteamProvider;
@@ -682,7 +681,7 @@ class TiebaProvider {
             url = /https?:\/\//.test(text) ? text : "";
         }
         if (url) {
-            (0, utils_1.antiRedirect)(aElement, url);
+            (0, utils_1.removeLinkRedirect)(aElement, url);
         }
     }
 }
@@ -707,12 +706,12 @@ class TwitterProvider {
         }
         if (/https?:\/\//.test(aElement.title)) {
             const url = decodeURIComponent(aElement.title);
-            (0, utils_1.antiRedirect)(aElement, url);
+            (0, utils_1.removeLinkRedirect)(aElement, url);
             return;
         }
         const innerText = aElement.innerText.replace(/…$/, "");
         if (/https?:\/\//.test(innerText)) {
-            (0, utils_1.antiRedirect)(aElement, innerText);
+            (0, utils_1.removeLinkRedirect)(aElement, innerText);
             return;
         }
     }
@@ -739,7 +738,7 @@ class BaiduVideoProvider {
             anonymous: true,
             onload: (res) => {
                 if (res.finalUrl) {
-                    (0, utils_1.antiRedirect)(aElement, res.finalUrl);
+                    (0, utils_1.removeLinkRedirect)(aElement, res.finalUrl);
                 }
             },
             onerror: (err) => {
@@ -770,7 +769,7 @@ class WeboProvider {
         const url = decodeURIComponent(aElement.title);
         if (url) {
             aElement.href = url;
-            (0, utils_1.antiRedirect)(aElement, url);
+            (0, utils_1.removeLinkRedirect)(aElement, url);
         }
     }
 }
@@ -809,7 +808,7 @@ class BaiduProvider {
                 anonymous: true,
             });
             if (res.finalUrl) {
-                (0, utils_1.antiRedirect)(aElement, res.finalUrl);
+                (0, utils_1.removeLinkRedirect)(aElement, res.finalUrl);
             }
         }
         catch (err) {
@@ -853,7 +852,7 @@ class DogeDogeProvider {
                 anonymous: true,
             });
             if (res.finalUrl) {
-                (0, utils_1.antiRedirect)(aElement, res.finalUrl);
+                (0, utils_1.removeLinkRedirect)(aElement, res.finalUrl);
             }
         }
         catch (err) {
@@ -878,7 +877,7 @@ class DouBanProvider {
         this.test = /douban\.com\/link2\/?\?url=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("url"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("url"));
     }
 }
 exports.DouBanProvider = DouBanProvider;
@@ -911,11 +910,11 @@ class GoogleProvider {
         // 尝试去除重定向
         if (aElement.getAttribute("data-href")) {
             const realUrl = aElement.getAttribute("data-href");
-            (0, utils_1.antiRedirect)(aElement, realUrl);
+            (0, utils_1.removeLinkRedirect)(aElement, realUrl);
         }
         const url = new URL(aElement.href);
         if (url.searchParams.get("url")) {
-            (0, utils_1.antiRedirect)(aElement, url.searchParams.get("url"));
+            (0, utils_1.removeLinkRedirect)(aElement, url.searchParams.get("url"));
         }
     }
 }
@@ -944,7 +943,7 @@ class JianShuProvider {
     }
     resolve(aElement) {
         const search = new URL(aElement.href).searchParams;
-        (0, utils_1.antiRedirect)(aElement, search.get("to") || search.get("t") || search.get("url"));
+        (0, utils_1.removeLinkRedirect)(aElement, search.get("to") || search.get("t") || search.get("url"));
     }
 }
 exports.JianShuProvider = JianShuProvider;
@@ -965,7 +964,7 @@ class SoProvider {
     resolve(aElement) {
         const url = aElement.getAttribute("data-mdurl") || aElement.getAttribute("e-landurl");
         if (url) {
-            (0, utils_1.antiRedirect)(aElement, url);
+            (0, utils_1.removeLinkRedirect)(aElement, url);
         }
         // remove track
         aElement.removeAttribute("e_href");
@@ -999,12 +998,12 @@ class SoGouProvider {
                 (0, utils_1.decreaseRedirect)(aElement);
                 const finalUrl = res.finalUrl;
                 if (finalUrl && !this.test.test(finalUrl)) {
-                    (0, utils_1.antiRedirect)(aElement, res.finalUrl);
+                    (0, utils_1.removeLinkRedirect)(aElement, res.finalUrl);
                 }
                 else {
                     const matcher = res.responseText.match(/URL=['"]([^'"]+)['"]/);
                     if (matcher === null || matcher === void 0 ? void 0 : matcher[1]) {
-                        (0, utils_1.antiRedirect)(aElement, res.finalUrl);
+                        (0, utils_1.removeLinkRedirect)(aElement, res.finalUrl);
                     }
                 }
             }
@@ -1040,7 +1039,7 @@ class SoGouProvider {
                 if (!localText || localText !== remoteText) {
                     return;
                 }
-                (0, utils_1.antiRedirect)(localEle, remoteEle.href);
+                (0, utils_1.removeLinkRedirect)(localEle, remoteEle.href);
             }
         }
     }
@@ -1080,7 +1079,7 @@ class YoutubeProvider {
         this.test = /www\.youtube\.com\/redirect\?.{1,}/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("q"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("q"));
     }
 }
 exports.YoutubeProvider = YoutubeProvider;
@@ -1099,7 +1098,7 @@ class ZhihuProvider {
         this.test = /zhihu\.com\/\?target=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
     }
 }
 exports.ZhihuProvider = ZhihuProvider;
@@ -1120,7 +1119,7 @@ class BaiduXueshuProvider {
     resolve(aElement) {
         const realHref = aElement.getAttribute("data-link") || aElement.getAttribute("data-url");
         if (realHref) {
-            (0, utils_1.antiRedirect)(aElement, decodeURIComponent(realHref));
+            (0, utils_1.removeLinkRedirect)(aElement, decodeURIComponent(realHref));
         }
     }
 }
@@ -1140,7 +1139,7 @@ class ZhihuZhuanlanProvider {
         this.test = /link\.zhihu\.com\/\?target=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
     }
 }
 exports.ZhihuZhuanlanProvider = ZhihuZhuanlanProvider;
@@ -1159,7 +1158,7 @@ class LogonewsProvider {
         this.test = /link\.logonews\.cn\/\?url=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("url"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("url"));
     }
 }
 exports.LogonewsProvider = LogonewsProvider;
@@ -1178,7 +1177,7 @@ class AfDianNetProvider {
         this.test = /afdian\.net\/link\?target=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
     }
 }
 exports.AfDianNetProvider = AfDianNetProvider;
@@ -1200,7 +1199,7 @@ class Blog51CTO {
         this.container = document.querySelector(".article-detail");
         if ((_a = this.container) === null || _a === void 0 ? void 0 : _a.contains(aElement)) {
             if (!aElement.onclick && aElement.href) {
-                aElement.onclick = function antiRedirectOnClickFn(e) {
+                aElement.onclick = function removeLinkRedirectOnClickFn(e) {
                     e.stopPropagation();
                     e.preventDefault();
                     e.stopImmediatePropagation();
@@ -1229,7 +1228,7 @@ class InfoQProvider {
         this.test = /infoq\.cn\/link\?target=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
     }
 }
 exports.InfoQProvider = InfoQProvider;
@@ -1248,7 +1247,7 @@ class GiteeProvider {
         this.test = /gitee\.com\/link\?target=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
     }
 }
 exports.GiteeProvider = GiteeProvider;
@@ -1267,7 +1266,7 @@ class SSPaiProvider {
         this.test = /sspai\.com\/link\?target=(.*)/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
+        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("target"));
     }
 }
 exports.SSPaiProvider = SSPaiProvider;
@@ -1286,7 +1285,7 @@ class BingProvider {
         this.test = /.+\.bing\.com\/ck\/a\?.*&u=a1(.*)&ntb=1/;
     }
     resolve(aElement) {
-        (0, utils_1.antiRedirect)(aElement, BingProvider.textDecoder.decode(Uint8Array.from(Array.from(atob(aElement.href
+        (0, utils_1.removeLinkRedirect)(aElement, BingProvider.textDecoder.decode(Uint8Array.from(Array.from(atob(aElement.href
             .split("&u=a1")[1]
             .split("&ntb=1")[0]
             .replace(/[-_]/g, (e) => ("-" === e ? "+" : "/"))
@@ -1527,7 +1526,7 @@ app
         provider: mijisou_com_1.MiJiProvider,
     },
     {
-        // 测试地址: https://github.com/axetroy/anti-redirect/issues/350
+        // 测试地址: https://github.com/MerielVaren/remove-link-redirects
         name: "CSDN",
         test: /blog\.csdn\.net/,
         provider: blog_csdn_net_1.CSDNProvider,
@@ -1539,7 +1538,7 @@ app
         provider: oschina_com_1.OSChinaProvider,
     },
     {
-        // 测试地址: https://github.com/axetroy/anti-redirect/issues/350
+        // 测试地址: https://github.com/MerielVaren/remove-link-redirects
         name: "印象笔记",
         test: /app\.yinxiang\.com/,
         provider: app_yinxiang_com_1.YinXiangProvider,

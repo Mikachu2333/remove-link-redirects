@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { antiRedirect } from "@/utils";
+import { removeLinkRedirect } from "@/utils";
 
 export class BaiduVideoProvider implements IProvider {
   public test = /v\.baidu\.com\/link\?url=/;
@@ -10,7 +10,7 @@ export class BaiduVideoProvider implements IProvider {
       anonymous: true,
       onload: (res) => {
         if (res.finalUrl) {
-          antiRedirect(aElement, res.finalUrl);
+          removeLinkRedirect(aElement, res.finalUrl);
         }
       },
       onerror: (err) => {

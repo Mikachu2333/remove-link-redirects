@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { antiRedirect } from "@/utils";
+import { removeLinkRedirect } from "@/utils";
 
 export class SoProvider implements IProvider {
   public test = /so\.com\/link\?(.*)/;
@@ -7,7 +7,7 @@ export class SoProvider implements IProvider {
     const url = aElement.getAttribute("data-mdurl") || aElement.getAttribute("e-landurl");
 
     if (url) {
-      antiRedirect(aElement, url);
+      removeLinkRedirect(aElement, url);
     }
 
     // remove track

@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { antiRedirect } from "@/utils";
+import { removeLinkRedirect } from "@/utils";
 export class GmailProvider implements IProvider {
   public test = true;
   private REDIRECT_PROPERTY = "data-saferedirecturl";
@@ -8,7 +8,7 @@ export class GmailProvider implements IProvider {
     // FIXME: gmail 是多层 iframe 嵌套
     if (aElement.getAttribute(this.REDIRECT_PROPERTY)) {
       aElement.removeAttribute(this.REDIRECT_PROPERTY);
-      antiRedirect(aElement, aElement.href);
+      removeLinkRedirect(aElement, aElement.href);
     }
   }
 }

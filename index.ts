@@ -196,7 +196,7 @@ app
       provider: MiJiProvider,
     },
     {
-      // 测试地址: https://github.com/axetroy/anti-redirect/issues/350
+      // 测试地址: https://github.com/MerielVaren/remove-link-redirects
       name: "CSDN",
       test: /blog\.csdn\.net/,
       provider: CSDNProvider,
@@ -208,7 +208,7 @@ app
       provider: OSChinaProvider,
     },
     {
-      // 测试地址: https://github.com/axetroy/anti-redirect/issues/350
+      // 测试地址: https://github.com/MerielVaren/remove-link-redirects
       name: "印象笔记",
       test: /app\.yinxiang\.com/,
       provider: YinXiangProvider,

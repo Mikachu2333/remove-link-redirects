@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { antiRedirect } from "@/utils";
+import { removeLinkRedirect } from "@/utils";
 
 export class JianShuProvider implements IProvider {
   public test = (aElement: HTMLAnchorElement) => {
@@ -15,6 +15,6 @@ export class JianShuProvider implements IProvider {
   };
   public resolve(aElement: HTMLAnchorElement) {
     const search = new URL(aElement.href).searchParams;
-    antiRedirect(aElement, search.get("to") || search.get("t") || search.get("url"));
+    removeLinkRedirect(aElement, search.get("to") || search.get("t") || search.get("url"));
   }
 }

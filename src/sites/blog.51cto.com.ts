@@ -7,7 +7,7 @@ export class Blog51CTO implements IProvider {
     this.container = document.querySelector(".article-detail");
     if (this.container?.contains(aElement)) {
       if (!aElement.onclick && aElement.href) {
-        aElement.onclick = function antiRedirectOnClickFn(e) {
+        aElement.onclick = function removeLinkRedirectOnClickFn(e) {
           e.stopPropagation();
           e.preventDefault();
           e.stopImmediatePropagation();

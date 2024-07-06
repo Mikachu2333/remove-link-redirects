@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { antiRedirect } from "@/utils";
+import { removeLinkRedirect } from "@/utils";
 
 export class WeboProvider implements IProvider {
   public test = /t\.cn\/\w+/;
@@ -12,7 +12,7 @@ export class WeboProvider implements IProvider {
 
     if (url) {
       aElement.href = url;
-      antiRedirect(aElement, url);
+      removeLinkRedirect(aElement, url);
     }
   }
 }

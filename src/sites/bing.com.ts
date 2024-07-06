@@ -1,11 +1,11 @@
 import { IProvider } from "@/provider";
-import { antiRedirect } from "@/utils";
+import { removeLinkRedirect } from "@/utils";
 
 export class BingProvider implements IProvider {
   private static textDecoder = new TextDecoder();
   public test = /.+\.bing\.com\/ck\/a\?.*&u=a1(.*)&ntb=1/;
   public resolve(aElement: HTMLAnchorElement) {
-    antiRedirect(
+    removeLinkRedirect(
       aElement,
       BingProvider.textDecoder.decode(
         Uint8Array.from(

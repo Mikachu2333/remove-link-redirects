@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { Marker, antiRedirect } from "@/utils";
+import { Marker, removeLinkRedirect } from "@/utils";
 export class GooglePlayProvider implements IProvider {
   public test(aElement: HTMLAnchorElement) {
     if (/google\.com\/url\?q=(.*)/.test(aElement.href)) {
@@ -11,7 +11,7 @@ export class GooglePlayProvider implements IProvider {
     return false;
   }
   public resolve(aElement: HTMLAnchorElement) {
-    antiRedirect(aElement, new URL(aElement.href).searchParams.get("q"));
+    removeLinkRedirect(aElement, new URL(aElement.href).searchParams.get("q"));
 
     // 移除开发者栏目下的重定向
     const eles = [].slice.call(document.querySelectorAll("a.hrTbp"));
