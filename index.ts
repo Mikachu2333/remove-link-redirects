@@ -237,9 +237,13 @@ const providers = [
 
 // @ts-ignore
 unsafeWindow?.navigation?.addEventListener("navigate", urlChange);
+// @ts-ignore
 unsafeWindow.addEventListener("replaceState", urlChange);
+// @ts-ignore
 unsafeWindow.addEventListener("pushState", urlChange);
+// @ts-ignore
 unsafeWindow.addEventListener("popState", urlChange);
+// @ts-ignore
 unsafeWindow.addEventListener("hashchange", urlChange);
 
 const app = new App();

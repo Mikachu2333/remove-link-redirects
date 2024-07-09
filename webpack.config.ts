@@ -30,7 +30,7 @@ const webpackConfig = {
 // @description       ${pkg.description}
 // @version           ${pkg.version}
 // @namespace         ${pkg.namespace}
-// @update            ${format(new Date(), "yyyy-MM-dd HH:mm:ss")}
+// @update            ${format(new Date(), "yyyy-MM-dd")}
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
