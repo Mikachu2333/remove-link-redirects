@@ -11,7 +11,6 @@ import { PocketProvider } from "@/sites/getpocket.com";
 import { GmailProvider } from "@/sites/gmail.google.com";
 import { JuejinProvider } from "@/sites/juejin.com";
 import { QQMailProvider } from "@/sites/mail.qq.com";
-import { MiJiProvider } from "@/sites/mijisou.com";
 import { GooglePlayProvider } from "@/sites/play.google.com";
 import { SteamProvider } from "@/sites/steamcommunity.com";
 import { TiebaProvider } from "@/sites/tieba.baidu.com";
@@ -181,12 +180,6 @@ const providers = [
     provider: SteamProvider,
   },
   {
-    // 测试地址: https://mijisou.com/?q=chrome&category_general=on&time_range=&language=zh-CN&pageno=1
-    name: "秘迹",
-    test: /mijisou\.com/,
-    provider: MiJiProvider,
-  },
-  {
     // 测试地址: https://github.com/MerielVaren/remove-link-redirects
     name: "CSDN",
     test: /blog\.csdn\.net/,
@@ -241,7 +234,7 @@ const providers = [
     provider: SSPaiProvider,
   },
   {
-    // 测试地址: https://www.bing.com/ck/a?&u=a1
+    // 测试地址: https://www.bing.com/search?q=asd
     name: "Bing",
     test: /bing\.com/,
     provider: BingProvider,

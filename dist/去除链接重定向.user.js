@@ -2,9 +2,9 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.0.5
+// @version           2.0.6
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-09 15:19:40
+// @update            2024-07-09 15:41:41
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
@@ -531,25 +531,6 @@ exports.QQMailProvider = QQMailProvider;
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.MiJiProvider = void 0;
-const utils_1 = __webpack_require__(2);
-class MiJiProvider {
-    constructor() {
-        this.test = /mijisou\.com\/url_proxy\?proxyurl=(.*)/;
-    }
-    resolve(aElement) {
-        (0, utils_1.removeLinkRedirect)(aElement, new URL(aElement.href).searchParams.get("proxyurl"));
-    }
-}
-exports.MiJiProvider = MiJiProvider;
-
-
-/***/ }),
-/* 15 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.GooglePlayProvider = void 0;
 const utils_1 = __webpack_require__(2);
 class GooglePlayProvider {
@@ -585,7 +566,7 @@ exports.GooglePlayProvider = GooglePlayProvider;
 
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -604,7 +585,7 @@ exports.SteamProvider = SteamProvider;
 
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -638,7 +619,7 @@ exports.TiebaProvider = TiebaProvider;
 
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -669,7 +650,7 @@ exports.TwitterProvider = TwitterProvider;
 
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -700,7 +681,7 @@ exports.BaiduVideoProvider = BaiduVideoProvider;
 
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -726,7 +707,7 @@ exports.WeboProvider = WeboProvider;
 
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -765,7 +746,7 @@ exports.BaiduProvider = BaiduProvider;
 
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -784,7 +765,7 @@ exports.DouBanProvider = DouBanProvider;
 
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -822,7 +803,7 @@ exports.GoogleProvider = GoogleProvider;
 
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -850,7 +831,7 @@ exports.JianShuProvider = JianShuProvider;
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -875,7 +856,7 @@ exports.SoProvider = SoProvider;
 
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -899,7 +880,7 @@ exports.SoGouProvider = SoGouProvider;
 
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -918,7 +899,7 @@ exports.YoutubeProvider = YoutubeProvider;
 
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -937,7 +918,7 @@ exports.ZhihuProvider = ZhihuProvider;
 
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -959,7 +940,7 @@ exports.BaiduXueshuProvider = BaiduXueshuProvider;
 
 
 /***/ }),
-/* 30 */
+/* 29 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -978,7 +959,7 @@ exports.ZhihuZhuanlanProvider = ZhihuZhuanlanProvider;
 
 
 /***/ }),
-/* 31 */
+/* 30 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -997,7 +978,7 @@ exports.LogonewsProvider = LogonewsProvider;
 
 
 /***/ }),
-/* 32 */
+/* 31 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1016,7 +997,7 @@ exports.AfDianNetProvider = AfDianNetProvider;
 
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -1048,7 +1029,7 @@ exports.Blog51CTO = Blog51CTO;
 
 
 /***/ }),
-/* 34 */
+/* 33 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1067,7 +1048,7 @@ exports.InfoQProvider = InfoQProvider;
 
 
 /***/ }),
-/* 35 */
+/* 34 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1086,7 +1067,7 @@ exports.GiteeProvider = GiteeProvider;
 
 
 /***/ }),
-/* 36 */
+/* 35 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1105,7 +1086,7 @@ exports.SSPaiProvider = SSPaiProvider;
 
 
 /***/ }),
-/* 37 */
+/* 36 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1176,30 +1157,29 @@ const getpocket_com_1 = __webpack_require__(10);
 const gmail_google_com_1 = __webpack_require__(11);
 const juejin_com_1 = __webpack_require__(12);
 const mail_qq_com_1 = __webpack_require__(13);
-const mijisou_com_1 = __webpack_require__(14);
-const play_google_com_1 = __webpack_require__(15);
-const steamcommunity_com_1 = __webpack_require__(16);
-const tieba_baidu_com_1 = __webpack_require__(17);
-const twitter_com_1 = __webpack_require__(18);
-const video_baidu_com_1 = __webpack_require__(19);
-const weibo_com_1 = __webpack_require__(20);
-const www_baidu_com_1 = __webpack_require__(21);
-const www_douban_com_1 = __webpack_require__(22);
-const www_google_com_1 = __webpack_require__(23);
-const www_jianshu_com_1 = __webpack_require__(24);
-const www_so_com_1 = __webpack_require__(25);
-const www_sogou_com_1 = __webpack_require__(26);
-const www_youtube_com_1 = __webpack_require__(27);
-const www_zhihu_com_1 = __webpack_require__(28);
-const xueshu_baidu_com_1 = __webpack_require__(29);
-const zhuanlan_zhihu_com_1 = __webpack_require__(30);
-const www_logonews_cn_1 = __webpack_require__(31);
-const afadian_net_1 = __webpack_require__(32);
-const blog_51cto_com_1 = __webpack_require__(33);
-const infoq_cn_1 = __webpack_require__(34);
-const gitee_com_1 = __webpack_require__(35);
-const sspai_com_1 = __webpack_require__(36);
-const bing_com_1 = __webpack_require__(37);
+const play_google_com_1 = __webpack_require__(14);
+const steamcommunity_com_1 = __webpack_require__(15);
+const tieba_baidu_com_1 = __webpack_require__(16);
+const twitter_com_1 = __webpack_require__(17);
+const video_baidu_com_1 = __webpack_require__(18);
+const weibo_com_1 = __webpack_require__(19);
+const www_baidu_com_1 = __webpack_require__(20);
+const www_douban_com_1 = __webpack_require__(21);
+const www_google_com_1 = __webpack_require__(22);
+const www_jianshu_com_1 = __webpack_require__(23);
+const www_so_com_1 = __webpack_require__(24);
+const www_sogou_com_1 = __webpack_require__(25);
+const www_youtube_com_1 = __webpack_require__(26);
+const www_zhihu_com_1 = __webpack_require__(27);
+const xueshu_baidu_com_1 = __webpack_require__(28);
+const zhuanlan_zhihu_com_1 = __webpack_require__(29);
+const www_logonews_cn_1 = __webpack_require__(30);
+const afadian_net_1 = __webpack_require__(31);
+const blog_51cto_com_1 = __webpack_require__(32);
+const infoq_cn_1 = __webpack_require__(33);
+const gitee_com_1 = __webpack_require__(34);
+const sspai_com_1 = __webpack_require__(35);
+const bing_com_1 = __webpack_require__(36);
 const providers = [
     {
         // 测试地址: https://www.zhihu.com/question/25258775
@@ -1345,12 +1325,6 @@ const providers = [
         provider: steamcommunity_com_1.SteamProvider,
     },
     {
-        // 测试地址: https://mijisou.com/?q=chrome&category_general=on&time_range=&language=zh-CN&pageno=1
-        name: "秘迹",
-        test: /mijisou\.com/,
-        provider: mijisou_com_1.MiJiProvider,
-    },
-    {
         // 测试地址: https://github.com/MerielVaren/remove-link-redirects
         name: "CSDN",
         test: /blog\.csdn\.net/,
@@ -1405,7 +1379,7 @@ const providers = [
         provider: sspai_com_1.SSPaiProvider,
     },
     {
-        // 测试地址: https://www.bing.com/ck/a?&u=a1
+        // 测试地址: https://www.bing.com/search?q=asd
         name: "Bing",
         test: /bing\.com/,
         provider: bing_com_1.BingProvider,
