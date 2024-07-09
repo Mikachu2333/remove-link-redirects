@@ -670,5 +670,8 @@
         removeLinkRedirect(aElement, url);
       },
     },
+    {
+      
+    }
   ];
 })();
