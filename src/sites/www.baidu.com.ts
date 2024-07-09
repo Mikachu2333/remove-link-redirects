@@ -31,4 +31,12 @@ export class BaiduProvider implements IProvider {
       return Promise.reject(new Error(`[http]: ${aElement.href} fail`));
     }
   }
+
+  // public resolve(aElementList: HTMLAnchorElement): void {
+  //   const cContainer = aElementList.closest(".c-container");
+  //   const tts = cContainer.querySelector(".tts");
+  //   console.log(tts)
+  //   const url = tts.getAttribute("data-url");
+  //   removeLinkRedirect(aElementList, url);
+  // }
 }

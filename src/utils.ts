@@ -51,50 +51,6 @@ export async function retryAsyncOperation<T>(
   }
 }
 
-class Query {
-  private object: Record<string, string> = {};
-
-  constructor(public queryStr: string) {
-    this.object = this.toObject(queryStr.replace(/^\?+/, ""));
-  }
-
-  private toObject(queryStr: string) {
-    const obj: Record<string, string> = {};
-    queryStr.split("&").forEach((item) => {
-      const arr: string[] = item.split("=") || [];
-      let key: string = arr[0] || "";
-      let value: string = arr[1] || "";
-      try {
-        key = decodeURIComponent(arr[0] || "");
-        value = decodeURIComponent(arr[1] || "");
-      } catch (_) {}
-      if (key) {
-        obj[key] = value;
-      }
-    });
-    return obj;
-  }
-
-  public toString(): string {
-    const arr: string[] = [];
-    for (const key in this.object) {
-      if (Object.prototype.hasOwnProperty.call(this.object, key)) {
-        const value = this.object[key];
-        arr.push(`${key}=${value}`);
-      }
-    }
-    return arr.length ? `?${arr.join("&")}` : "";
-  }
-}
-
-export function queryParser(queryString: string): Query {
-  return new Query(queryString);
-}
-
-export function getText(htmlElement: HTMLElement): string {
-  return (htmlElement.innerText || htmlElement.textContent).trim();
-}
-
 export function getRedirect(aElement: HTMLAnchorElement): number {
   return +(aElement.getAttribute(Marker.RedirectCount) || 0);
 }

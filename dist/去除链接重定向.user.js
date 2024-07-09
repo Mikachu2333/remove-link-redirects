@@ -4,7 +4,7 @@
 // @description       去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间
 // @version           2.0.1
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-06 13:23:35
+// @update            2024-07-09 09:10:45
 // @grant             GM.xmlhttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
@@ -172,8 +172,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Marker = void 0;
 exports.matchLinkFromUrl = matchLinkFromUrl;
 exports.retryAsyncOperation = retryAsyncOperation;
-exports.queryParser = queryParser;
-exports.getText = getText;
 exports.getRedirect = getRedirect;
 exports.increaseRedirect = increaseRedirect;
 exports.decreaseRedirect = decreaseRedirect;
@@ -226,46 +224,6 @@ async function retryAsyncOperation(operation, maxRetries, currentRetry = 0) {
             throw err;
         }
     }
-}
-class Query {
-    constructor(queryStr) {
-        this.queryStr = queryStr;
-        this.object = {};
-        this.object = this.toObject(queryStr.replace(/^\?+/, ""));
-    }
-    toObject(queryStr) {
-        const obj = {};
-        queryStr.split("&").forEach((item) => {
-            const arr = item.split("=") || [];
-            let key = arr[0] || "";
-            let value = arr[1] || "";
-            try {
-                key = decodeURIComponent(arr[0] || "");
-                value = decodeURIComponent(arr[1] || "");
-            }
-            catch (_) { }
-            if (key) {
-                obj[key] = value;
-            }
-        });
-        return obj;
-    }
-    toString() {
-        const arr = [];
-        for (const key in this.object) {
-            if (Object.prototype.hasOwnProperty.call(this.object, key)) {
-                const value = this.object[key];
-                arr.push(`${key}=${value}`);
-            }
-        }
-        return arr.length ? `?${arr.join("&")}` : "";
-    }
-}
-function queryParser(queryString) {
-    return new Query(queryString);
-}
-function getText(htmlElement) {
-    return (htmlElement.innerText || htmlElement.textContent).trim();
 }
 function getRedirect(aElement) {
     return +(aElement.getAttribute(Marker.RedirectCount) || 0);
@@ -788,33 +746,39 @@ class BaiduProvider {
     constructor() {
         this.test = /www\.baidu\.com\/link\?url=/;
     }
-    resolve(aElement) {
-        if ((0, utils_1.getRedirect)(aElement) <= 2 && this.test.test(aElement.href)) {
-            (0, utils_1.increaseRedirect)(aElement);
-            (0, utils_1.retryAsyncOperation)(() => this.handlerOneElement(aElement), 3)
-                .then((res) => {
-                (0, utils_1.decreaseRedirect)(aElement);
-            })
-                .catch((err) => {
-                (0, utils_1.decreaseRedirect)(aElement);
-            });
-        }
-    }
-    async handlerOneElement(aElement) {
-        try {
-            const res = await GM.xmlHttpRequest({
-                method: "GET",
-                url: aElement.href,
-                anonymous: true,
-            });
-            if (res.finalUrl) {
-                (0, utils_1.removeLinkRedirect)(aElement, res.finalUrl);
-            }
-        }
-        catch (err) {
-            console.error(err);
-            return Promise.reject(new Error(`[http]: ${aElement.href} fail`));
-        }
+    // public resolve(aElement: HTMLAnchorElement) {
+    //   if (getRedirect(aElement) <= 2 && this.test.test(aElement.href)) {
+    //     increaseRedirect(aElement);
+    //     retryAsyncOperation(() => this.handlerOneElement(aElement), 3)
+    //       .then((res) => {
+    //         decreaseRedirect(aElement);
+    //       })
+    //       .catch((err) => {
+    //         decreaseRedirect(aElement);
+    //       });
+    //   }
+    // }
+    // private async handlerOneElement(aElement: HTMLAnchorElement): Promise<unknown> {
+    //   try {
+    //     const res = await GM.xmlHttpRequest({
+    //       method: "GET",
+    //       url: aElement.href,
+    //       anonymous: true,
+    //     });
+    //     if (res.finalUrl) {
+    //       removeLinkRedirect(aElement, res.finalUrl);
+    //     }
+    //   } catch (err) {
+    //     console.error(err);
+    //     return Promise.reject(new Error(`[http]: ${aElement.href} fail`));
+    //   }
+    // }
+    resolve(aElementList) {
+        const cContainer = aElementList.closest(".c-container");
+        const tts = cContainer.querySelector(".tts");
+        console.log(tts);
+        const url = tts.getAttribute("data-url");
+        (0, utils_1.removeLinkRedirect)(aElementList, url);
     }
 }
 exports.BaiduProvider = BaiduProvider;
@@ -986,81 +950,13 @@ class SoGouProvider {
     constructor() {
         this.test = /www\.sogou\.com\/link\?url=/;
     }
-    async resolve(aElement) {
-        try {
-            if ((0, utils_1.getRedirect)(aElement) <= 2 && this.test.test(aElement.href)) {
-                (0, utils_1.increaseRedirect)(aElement);
-                const res = await GM.xmlHttpRequest({
-                    method: "GET",
-                    url: aElement.href,
-                    anonymous: true,
-                });
-                (0, utils_1.decreaseRedirect)(aElement);
-                const finalUrl = res.finalUrl;
-                if (finalUrl && !this.test.test(finalUrl)) {
-                    (0, utils_1.removeLinkRedirect)(aElement, res.finalUrl);
-                }
-                else {
-                    const matcher = res.responseText.match(/URL=['"]([^'"]+)['"]/);
-                    if (matcher === null || matcher === void 0 ? void 0 : matcher[1]) {
-                        (0, utils_1.removeLinkRedirect)(aElement, res.finalUrl);
-                    }
-                }
-            }
-        }
-        catch (err) {
-            (0, utils_1.decreaseRedirect)(aElement);
-            console.error(err);
-        }
-    }
-    parsePage(res) {
-        const responseText = res.responseText.replace(/(src=[^>]*|link=[^>])/g, "");
-        const html = document.createElement("html");
-        html.innerHTML = responseText;
-        // let selector = '#main .results div.vrwrap>h3';
-        // let selector = '#main .results h3>a';
-        const selector = '#main .results a[href*="www.sogou.com/link?url="]';
-        const remotes = [].slice.call(html.querySelectorAll("#main .results a[href]"));
-        const locals = [].slice.call(document.querySelectorAll(selector));
-        for (const localEle of locals) {
-            for (const remoteEle of remotes) {
-                let localText = (0, utils_1.getText)(localEle);
-                let remoteText = (0, utils_1.getText)(remoteEle);
-                // 通用按钮，例如【点击下载】
-                if (localEle.classList.contains("str-public-btn")) {
-                    localText = (0, utils_1.getText)(localEle.parentNode);
-                    remoteText = (0, utils_1.getText)(remoteEle.parentNode);
-                }
-                else if (localEle.classList.contains("str_img")) {
-                    // 图片
-                    localText = (0, utils_1.getText)(localEle.parentNode.parentNode);
-                    remoteText = (0, utils_1.getText)(remoteEle.parentNode.parentNode);
-                }
-                if (!localText || localText !== remoteText) {
-                    return;
-                }
-                (0, utils_1.removeLinkRedirect)(localEle, remoteEle.href);
-            }
-        }
-    }
-    async onInit() {
-        if (!/www\.sogou\.com\/web/.test(window.top.location.href)) {
-            return;
-        }
-        const query = (0, utils_1.queryParser)(window.top.location.search);
-        // 搜索使用http搜索，得到的是直接链接
-        const url = `${location.protocol.replace(/:$/, "").replace("s", "")}://${location.host + location.pathname + query}`;
-        GM.xmlHttpRequest({
-            method: "GET",
-            url,
-            onload: (res) => {
-                this.parsePage(res);
-            },
-            onerror: (err) => {
-                console.error(err);
-            },
-        });
-        return this;
+    resolve(aElement) {
+        // 从这个a往上找到的第一个class=vrwrap的元素
+        const vrwrap = aElement.closest(".vrwrap");
+        // 往子孙找到的第一个class包含r-sech的元素
+        const rSech = vrwrap.querySelector(".r-sech");
+        const url = rSech.getAttribute("data-url");
+        (0, utils_1.removeLinkRedirect)(aElement, url);
     }
 }
 exports.SoGouProvider = SoGouProvider;
