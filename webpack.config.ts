@@ -39,7 +39,6 @@ const webpackConfig = {
 // @include           *://www.google*
 // @match             *://www.google.com/*
 // @match             *://docs.google.com/*
-// @match             *://mail.google.com/*
 // @match             *://play.google.com/*
 // @match             *://www.youtube.com/*
 // @match             *://encrypted.google.com/*

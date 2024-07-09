@@ -8,7 +8,6 @@ import { OSChinaProvider } from "@/sites/oschina.com";
 import { ZhihuDailyProvider } from "@/sites/daily.zhihu.com";
 import { GoogleDocsProvider } from "@/sites/docs.google.com";
 import { PocketProvider } from "@/sites/getpocket.com";
-import { GmailProvider } from "@/sites/gmail.google.com";
 import { JuejinProvider } from "@/sites/juejin.com";
 import { QQMailProvider } from "@/sites/mail.qq.com";
 import { GooglePlayProvider } from "@/sites/play.google.com";
@@ -64,11 +63,6 @@ const providers = [
     name: "Google Docs",
     test: /docs\.google\.com/,
     provider: GoogleDocsProvider,
-  },
-  {
-    name: "Gmail",
-    test: /mail\.google\.com/,
-    provider: GmailProvider,
   },
   {
     // 测试地址: https://play.google.com/store/movies/details/%E7%A7%BB%E5%8B%95%E8%BF%B7%E5%AE%AE_%E6%AD%BB%E4%BA%A1%E8%A7%A3%E8%97%A5?id=YNy7gRqwtMk
