@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name              去除链接重定向
 // @author            Meriel
-// @description       去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间
-// @version           2.0.2
+// @description       能解析的链接绝不访问！非常快！非常高效！去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间
+// @version           2.0.3
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-09 11:31:51
+// @update            2024-07-09 11:33:23
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
