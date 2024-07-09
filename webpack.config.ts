@@ -57,10 +57,8 @@ const webpackConfig = {
 // @match             *://www.jianshu.com/*
 // @match             *://www.douban.com/*
 // @match             *://getpocket.com/*
-// @match             *://www.dogedoge.com/*
 // @match             *://51.ruyo.net/*
 // @match             *://steamcommunity.com/*
-// @match             *://mijisou.com/*
 // @match             *://blog.csdn.net/*
 // @match             *://*.blog.csdn.net/*
 // @match             *://*.oschina.net/*
