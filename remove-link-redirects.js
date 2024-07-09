@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.0.9
+// @version           2.1.0
 // @namespace         Violentmonkey Scripts
 // @update            2024-07-09
 // @grant             GM.xmlHttpRequest
@@ -102,7 +102,7 @@
       if (provider.linkTest instanceof RegExp && !provider.linkTest.test(element.href)) {
         return false;
       }
-      if (typeof provider.linkTest === "function" && !provider.test(element)) {
+      if (typeof provider.linkTest === "function" && !provider.linkTest(element)) {
         return false;
       }
       if (provider.linkTest instanceof Boolean) {
@@ -134,7 +134,7 @@
         if (provider.urlTest instanceof RegExp && !provider.urlTest.test(location.hostname)) {
           continue;
         }
-        if (typeof provider.urlTest === "function" && provider.urlTest() === false) {
+        if (typeof provider.urlTest === "function" && !provider.urlTest() === false) {
           continue;
         }
         this.registeredProviders.push(provider);
