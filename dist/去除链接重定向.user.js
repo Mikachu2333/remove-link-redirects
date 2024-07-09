@@ -2,10 +2,10 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用，平均时间在0.02ms~0.05ms之间
-// @version           2.0.1
+// @version           2.0.2
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-09 09:10:45
-// @grant             GM.xmlhttpRequest
+// @update            2024-07-09 11:31:51
+// @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
 // @match             *://v.baidu.com/*
@@ -746,39 +746,43 @@ class BaiduProvider {
     constructor() {
         this.test = /www\.baidu\.com\/link\?url=/;
     }
-    // public resolve(aElement: HTMLAnchorElement) {
-    //   if (getRedirect(aElement) <= 2 && this.test.test(aElement.href)) {
-    //     increaseRedirect(aElement);
-    //     retryAsyncOperation(() => this.handlerOneElement(aElement), 3)
-    //       .then((res) => {
-    //         decreaseRedirect(aElement);
-    //       })
-    //       .catch((err) => {
-    //         decreaseRedirect(aElement);
-    //       });
-    //   }
-    // }
-    // private async handlerOneElement(aElement: HTMLAnchorElement): Promise<unknown> {
-    //   try {
-    //     const res = await GM.xmlHttpRequest({
-    //       method: "GET",
-    //       url: aElement.href,
-    //       anonymous: true,
-    //     });
-    //     if (res.finalUrl) {
-    //       removeLinkRedirect(aElement, res.finalUrl);
-    //     }
-    //   } catch (err) {
-    //     console.error(err);
-    //     return Promise.reject(new Error(`[http]: ${aElement.href} fail`));
-    //   }
-    // }
-    resolve(aElementList) {
-        const cContainer = aElementList.closest(".c-container");
-        const tts = cContainer.querySelector(".tts");
-        console.log(tts);
-        const url = tts.getAttribute("data-url");
-        (0, utils_1.removeLinkRedirect)(aElementList, url);
+    async handleOneElement(aElement) {
+        try {
+            const res = await GM.xmlHttpRequest({
+                method: "GET",
+                url: aElement.href,
+                anonymous: true,
+            });
+            if (res.finalUrl) {
+                (0, utils_1.removeLinkRedirect)(aElement, res.finalUrl);
+            }
+        }
+        catch (err) {
+            console.error(err);
+            return Promise.reject(new Error(`[http]: ${aElement.href} fail`));
+        }
+    }
+    async resolve(aElement) {
+        if (aElement.closest(".cos-row") !== null) {
+            this.handleOneElement(aElement);
+            return;
+        }
+        const cContainer = aElement.closest(".c-container");
+        const outerHTML = cContainer.outerHTML;
+        const urlDisplay = outerHTML.match(/"urlDisplay":"(.*?)"/);
+        const mu = outerHTML.match(/mu="(.*?)"/);
+        let url;
+        if ((urlDisplay === null || urlDisplay === void 0 ? void 0 : urlDisplay[1]) && urlDisplay[1] !== "null" && urlDisplay[1] !== "undefined") {
+            url = urlDisplay[1];
+        }
+        else if ((mu === null || mu === void 0 ? void 0 : mu[1]) && mu[1] !== "null" && mu[1] !== "undefined") {
+            url = mu[1];
+        }
+        else {
+            this.handleOneElement(aElement);
+            return;
+        }
+        (0, utils_1.removeLinkRedirect)(aElement, url);
     }
 }
 exports.BaiduProvider = BaiduProvider;

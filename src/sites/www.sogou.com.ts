@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { removeLinkRedirect, decreaseRedirect, getRedirect, increaseRedirect } from "@/utils";
+import { removeLinkRedirect } from "@/utils";
 
 export class SoGouProvider implements IProvider {
   public test = /www\.sogou\.com\/link\?url=/;
