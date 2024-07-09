@@ -18,7 +18,7 @@ export class App {
   /**
    * 处理变动
    * @param mutation
-   * @returns 
+   * @returns
    * */
   private handleMutation(mutation: MutationRecord): void {
     if (mutation.type === "childList") {

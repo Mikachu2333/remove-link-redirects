@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name              去除链接重定向
 // @author            Meriel
-// @description       能解析的链接绝不访问！非常快！非常高效！平均时间在0.02ms~0.05ms之间！几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精，！并且去掉一切多余的三方库，将插件大小压缩到极致！去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用
-// @version           2.0.4
+// @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
+// @version           2.0.5
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-09 11:52:44
+// @update            2024-07-09 15:19:40
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
@@ -170,17 +170,28 @@ exports.App = App;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Marker = void 0;
+exports.urlChange = urlChange;
 exports.matchLinkFromUrl = matchLinkFromUrl;
 exports.retryAsyncOperation = retryAsyncOperation;
-exports.getRedirect = getRedirect;
-exports.increaseRedirect = increaseRedirect;
-exports.decreaseRedirect = decreaseRedirect;
 exports.removeLinkRedirect = removeLinkRedirect;
 var Marker;
 (function (Marker) {
-    Marker["RedirectCount"] = "redirect-count";
     Marker["RedirectStatusDone"] = "redirect-status-done";
 })(Marker || (exports.Marker = Marker = {}));
+/**
+ * 监听 URL 变化
+ * @param event
+ */
+function urlChange(event) {
+    var _a;
+    const destinationUrl = ((_a = event === null || event === void 0 ? void 0 : event.destination) === null || _a === void 0 ? void 0 : _a.url) || "";
+    if (destinationUrl.startsWith("about:blank"))
+        return;
+    const href = destinationUrl || location.href;
+    if (href !== location.href) {
+        location.href = href;
+    }
+}
 /**
  * 根据url上的路径匹配，去除重定向
  * @param {HTMLAnchorElement} aElement
@@ -188,18 +199,15 @@ var Marker;
  * @returns {boolean}
  */
 function matchLinkFromUrl(aElement, tester) {
-    const matcher = tester.exec(aElement.href);
-    if (!((matcher === null || matcher === void 0 ? void 0 : matcher.length) && matcher[1])) {
+    const match = tester.exec(aElement.href);
+    if (!match || !match[1])
         return "";
-    }
-    let url = "";
     try {
-        url = decodeURIComponent(matcher[1]);
+        return decodeURIComponent(match[1]);
     }
-    catch (e) {
-        url = /https?:\/\//.test(matcher[1]) ? matcher[1] : "";
+    catch (_a) {
+        return /https?:\/\//.test(match[1]) ? match[1] : "";
     }
-    return url;
 }
 /**
  * 重试异步操作
@@ -210,8 +218,7 @@ function matchLinkFromUrl(aElement, tester) {
 async function retryAsyncOperation(operation, maxRetries, currentRetry = 0) {
     try {
         // 尝试执行操作
-        const result = await operation();
-        return result;
+        return await operation();
     }
     catch (err) {
         if (currentRetry < maxRetries) {
@@ -219,23 +226,8 @@ async function retryAsyncOperation(operation, maxRetries, currentRetry = 0) {
             await new Promise((resolve) => setTimeout(resolve, 1000)); // 等待1秒
             return retryAsyncOperation(operation, maxRetries, currentRetry + 1);
         }
-        else {
-            // 如果重试次数用尽，抛出错误
-            throw err;
-        }
-    }
-}
-function getRedirect(aElement) {
-    return +(aElement.getAttribute(Marker.RedirectCount) || 0);
-}
-function increaseRedirect(aElement) {
-    const num = getRedirect(aElement);
-    aElement.setAttribute(Marker.RedirectCount, `${num}${1}`);
-}
-function decreaseRedirect(aElement) {
-    const num = getRedirect(aElement);
-    if (num > 0) {
-        aElement.setAttribute(Marker.RedirectCount, `${num - 1}`);
+        // 如果重试次数用尽，抛出错误
+        throw err;
     }
 }
 /**
@@ -245,11 +237,10 @@ function decreaseRedirect(aElement) {
  * @param options
  */
 function removeLinkRedirect(aElement, realUrl, options = {}) {
-    if (!options.force && (!realUrl || aElement.href === realUrl)) {
-        return;
+    if (options.force || (realUrl && aElement.href !== realUrl)) {
+        aElement.setAttribute("redirect-status-done", aElement.href);
+        aElement.href = realUrl;
     }
-    aElement.setAttribute(Marker.RedirectStatusDone, aElement.href);
-    aElement.href = realUrl;
 }
 
 
@@ -745,9 +736,10 @@ const utils_1 = __webpack_require__(2);
 class BaiduProvider {
     constructor() {
         this.test = /www\.baidu\.com\/link\?url=/;
+        this.unresolvable = ["nourl.ubs.baidu.com", "lightapp.baidu.com"];
     }
-    async handleOneElement(aElement) {
-        try {
+    handleOneElement(aElement) {
+        (0, utils_1.retryAsyncOperation)(async () => {
             const res = await GM.xmlHttpRequest({
                 method: "GET",
                 url: aElement.href,
@@ -756,33 +748,17 @@ class BaiduProvider {
             if (res.finalUrl) {
                 (0, utils_1.removeLinkRedirect)(aElement, res.finalUrl);
             }
-        }
-        catch (err) {
-            console.error(err);
-            return Promise.reject(new Error(`[http]: ${aElement.href} fail`));
-        }
+        }, 3);
     }
     async resolve(aElement) {
-        if (aElement.closest(".cos-row") !== null) {
-            this.handleOneElement(aElement);
-            return;
-        }
-        const cContainer = aElement.closest(".c-container");
-        const outerHTML = cContainer.outerHTML;
-        const urlDisplay = outerHTML.match(/"urlDisplay":"(.*?)"/);
-        const mu = outerHTML.match(/mu="(.*?)"/);
-        let url;
-        if ((urlDisplay === null || urlDisplay === void 0 ? void 0 : urlDisplay[1]) && urlDisplay[1] !== "null" && urlDisplay[1] !== "undefined") {
-            url = urlDisplay[1];
-        }
-        else if ((mu === null || mu === void 0 ? void 0 : mu[1]) && mu[1] !== "null" && mu[1] !== "undefined") {
-            url = mu[1];
+        var _a;
+        const url = aElement.closest(".cos-row") ? null : (_a = aElement.closest(".c-container")) === null || _a === void 0 ? void 0 : _a.getAttribute("mu");
+        if (url && url !== "null" && url !== "undefined" && !this.unresolvable.some((u) => url.includes(u))) {
+            (0, utils_1.removeLinkRedirect)(aElement, url);
         }
         else {
             this.handleOneElement(aElement);
-            return;
         }
-        (0, utils_1.removeLinkRedirect)(aElement, url);
     }
 }
 exports.BaiduProvider = BaiduProvider;
@@ -790,50 +766,6 @@ exports.BaiduProvider = BaiduProvider;
 
 /***/ }),
 /* 22 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.DogeDogeProvider = void 0;
-const utils_1 = __webpack_require__(2);
-class DogeDogeProvider {
-    constructor() {
-        this.test = /www\.dogedoge\.com\/rd\/.{1,}/;
-    }
-    resolve(aElement) {
-        if ((0, utils_1.getRedirect)(aElement) <= 2 && this.test.test(aElement.href)) {
-            (0, utils_1.increaseRedirect)(aElement);
-            this.handlerOneElement(aElement)
-                .then((res) => {
-                (0, utils_1.decreaseRedirect)(aElement);
-            })
-                .catch((err) => {
-                (0, utils_1.decreaseRedirect)(aElement);
-            });
-        }
-    }
-    async handlerOneElement(aElement) {
-        try {
-            const res = await GM.xmlHttpRequest({
-                method: "GET",
-                url: aElement.href,
-                anonymous: true,
-            });
-            if (res.finalUrl) {
-                (0, utils_1.removeLinkRedirect)(aElement, res.finalUrl);
-            }
-        }
-        catch (err) {
-            console.error(err);
-            return Promise.reject(new Error(`[http]: ${aElement.href} fail`));
-        }
-    }
-}
-exports.DogeDogeProvider = DogeDogeProvider;
-
-
-/***/ }),
-/* 23 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -852,7 +784,7 @@ exports.DouBanProvider = DouBanProvider;
 
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -890,7 +822,7 @@ exports.GoogleProvider = GoogleProvider;
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -918,7 +850,7 @@ exports.JianShuProvider = JianShuProvider;
 
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -943,7 +875,7 @@ exports.SoProvider = SoProvider;
 
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -967,7 +899,7 @@ exports.SoGouProvider = SoGouProvider;
 
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -986,7 +918,7 @@ exports.YoutubeProvider = YoutubeProvider;
 
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1005,7 +937,7 @@ exports.ZhihuProvider = ZhihuProvider;
 
 
 /***/ }),
-/* 30 */
+/* 29 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1027,7 +959,7 @@ exports.BaiduXueshuProvider = BaiduXueshuProvider;
 
 
 /***/ }),
-/* 31 */
+/* 30 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1046,7 +978,7 @@ exports.ZhihuZhuanlanProvider = ZhihuZhuanlanProvider;
 
 
 /***/ }),
-/* 32 */
+/* 31 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1065,7 +997,7 @@ exports.LogonewsProvider = LogonewsProvider;
 
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1084,7 +1016,7 @@ exports.AfDianNetProvider = AfDianNetProvider;
 
 
 /***/ }),
-/* 34 */
+/* 33 */
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -1116,7 +1048,7 @@ exports.Blog51CTO = Blog51CTO;
 
 
 /***/ }),
-/* 35 */
+/* 34 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1135,7 +1067,7 @@ exports.InfoQProvider = InfoQProvider;
 
 
 /***/ }),
-/* 36 */
+/* 35 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1154,7 +1086,7 @@ exports.GiteeProvider = GiteeProvider;
 
 
 /***/ }),
-/* 37 */
+/* 36 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1173,7 +1105,7 @@ exports.SSPaiProvider = SSPaiProvider;
 
 
 /***/ }),
-/* 38 */
+/* 37 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1229,8 +1161,10 @@ var __webpack_exports__ = {};
 (() => {
 var exports = __webpack_exports__;
 
+var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const app_1 = __webpack_require__(1);
+const utils_1 = __webpack_require__(2);
 const _51_ruyo_net_1 = __webpack_require__(3);
 const addons_mozilla_org_1 = __webpack_require__(4);
 const app_yinxiang_com_1 = __webpack_require__(5);
@@ -1250,26 +1184,23 @@ const twitter_com_1 = __webpack_require__(18);
 const video_baidu_com_1 = __webpack_require__(19);
 const weibo_com_1 = __webpack_require__(20);
 const www_baidu_com_1 = __webpack_require__(21);
-const www_dogedoge_com_1 = __webpack_require__(22);
-const www_douban_com_1 = __webpack_require__(23);
-const www_google_com_1 = __webpack_require__(24);
-const www_jianshu_com_1 = __webpack_require__(25);
-const www_so_com_1 = __webpack_require__(26);
-const www_sogou_com_1 = __webpack_require__(27);
-const www_youtube_com_1 = __webpack_require__(28);
-const www_zhihu_com_1 = __webpack_require__(29);
-const xueshu_baidu_com_1 = __webpack_require__(30);
-const zhuanlan_zhihu_com_1 = __webpack_require__(31);
-const www_logonews_cn_1 = __webpack_require__(32);
-const afadian_net_1 = __webpack_require__(33);
-const blog_51cto_com_1 = __webpack_require__(34);
-const infoq_cn_1 = __webpack_require__(35);
-const gitee_com_1 = __webpack_require__(36);
-const sspai_com_1 = __webpack_require__(37);
-const bing_com_1 = __webpack_require__(38);
-const app = new app_1.App();
-app
-    .registerProvider([
+const www_douban_com_1 = __webpack_require__(22);
+const www_google_com_1 = __webpack_require__(23);
+const www_jianshu_com_1 = __webpack_require__(24);
+const www_so_com_1 = __webpack_require__(25);
+const www_sogou_com_1 = __webpack_require__(26);
+const www_youtube_com_1 = __webpack_require__(27);
+const www_zhihu_com_1 = __webpack_require__(28);
+const xueshu_baidu_com_1 = __webpack_require__(29);
+const zhuanlan_zhihu_com_1 = __webpack_require__(30);
+const www_logonews_cn_1 = __webpack_require__(31);
+const afadian_net_1 = __webpack_require__(32);
+const blog_51cto_com_1 = __webpack_require__(33);
+const infoq_cn_1 = __webpack_require__(34);
+const gitee_com_1 = __webpack_require__(35);
+const sspai_com_1 = __webpack_require__(36);
+const bing_com_1 = __webpack_require__(37);
+const providers = [
     {
         // 测试地址: https://www.zhihu.com/question/25258775
         name: "知乎",
@@ -1402,12 +1333,6 @@ app
         provider: getpocket_com_1.PocketProvider,
     },
     {
-        // 测试地址: https://www.dogedoge.com/results?q=chrome
-        name: "DogeDoge",
-        test: /www\.dogedoge\.com/,
-        provider: www_dogedoge_com_1.DogeDogeProvider,
-    },
-    {
         // 测试地址: https://51.ruyo.net/15053.html
         name: "Ruyo",
         test: /51\.ruyo\.net/,
@@ -1485,8 +1410,15 @@ app
         test: /bing\.com/,
         provider: bing_com_1.BingProvider,
     },
-])
-    .bootstrap();
+];
+// @ts-ignore
+(_a = unsafeWindow === null || unsafeWindow === void 0 ? void 0 : unsafeWindow.navigation) === null || _a === void 0 ? void 0 : _a.addEventListener("navigate", utils_1.urlChange);
+unsafeWindow.addEventListener("replaceState", utils_1.urlChange);
+unsafeWindow.addEventListener("pushState", utils_1.urlChange);
+unsafeWindow.addEventListener("popState", utils_1.urlChange);
+unsafeWindow.addEventListener("hashchange", utils_1.urlChange);
+const app = new app_1.App();
+app.registerProvider(providers).bootstrap();
 
 })();
 
