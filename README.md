@@ -81,12 +81,14 @@
 
 ### 我想支持更多的站点
 
-点击这个链接[github反馈区](https://github.com/MerielVaren/remove-link-redirects/issues/new/)，提交 issues，说出你想要支持的站点`<br>`
+点击这个链接[github反馈区](https://github.com/MerielVaren/remove-link-redirects/issues/new/)，提交 issues，说出你想要支持的站点  
 或点击这个链接[greasyfork反馈区](https://greasyfork.org/zh-CN/scripts/483475-%E5%8E%BB%E9%99%A4%E9%93%BE%E6%8E%A5%E9%87%8D%E5%AE%9A%E5%90%91/feedback)
 
 ### 贡献代码
 
-需要通过 NodeJs / Deno / Bun 把 TypeScript 编译成 javascript
+需要通过 NodeJs / Deno / Bun 把 TypeScript 编译成 javascript  
+其中/目录下的remove-link-redirects.js是我根据webpack打包得到的js文件自行重写的可阅读的js文件，目前发布的也是这个版本  
+/dist/目录下的去除链接重定向.user.js是webpack自动打包生成的单文件js，较为不可读  
 
 ```bash
 git clone https://github.com/MerielVaren/remove-link-redirects.git
