@@ -80,9 +80,9 @@
 
 ### 贡献代码
 
-需要通过 NodeJs / Deno / Bun 把 TypeScript 编译成 javascript
-其中/目录下的remove-link-redirects.js是我根据webpack打包得到的js文件自行重写的可阅读的js文件，目前发布的也是这个版本
-/dist/目录下的去除链接重定向.user.js是webpack自动打包生成的单文件js
+需要通过 NodeJs / Deno / Bun 把 TypeScript 编译成 javascript  
+其中/目录下的remove-link-redirects.js是我根据webpack打包得到的js文件自行重写的可阅读的js文件，目前发布的也是这个版本  
+/dist/目录下的去除链接重定向.user.js是webpack自动打包生成的单文件js  
 
 ```bash
 git clone https://github.com/MerielVaren/remove-link-redirects.git
