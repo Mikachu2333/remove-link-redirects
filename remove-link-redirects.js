@@ -695,7 +695,7 @@
       },
     },
   ];
-  
+
   const app = new App();
   app.registerProvider(providers).bootstrap();
 })();
