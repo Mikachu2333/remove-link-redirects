@@ -233,7 +233,7 @@ function removeLinkRedirect(aElement, realUrl, options = {}) {
 /**
  * 监听URL变化
  */
-function monitorUrlChange() {
+function monitorUrlChange(operation) {
     var _a;
     function urlChange(event) {
         var _a;
@@ -242,7 +242,7 @@ function monitorUrlChange() {
             return;
         const href = destinationUrl || location.href;
         if (href !== location.href) {
-            location.href = href;
+            operation(href);
         }
     }
     // @ts-ignore
@@ -727,7 +727,9 @@ class BaiduProvider {
         }
     }
     async onInit() {
-        (0, utils_1.monitorUrlChange)();
+        (0, utils_1.monitorUrlChange)((href) => {
+            location.href = href;
+        });
         return;
     }
 }

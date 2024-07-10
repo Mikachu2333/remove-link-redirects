@@ -30,7 +30,9 @@ export class BaiduProvider implements IProvider {
   }
 
   public async onInit(): Promise<this> {
-    monitorUrlChange();
+    monitorUrlChange((href: string) => {
+      location.href = href;
+    });
     return;
   }
 }

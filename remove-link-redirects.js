@@ -213,13 +213,13 @@
   /**
    * 监听URL变化
    */
-  function monitorUrlChange() {
+  function monitorUrlChange(operation) {
     function urlChange(event) {
       const destinationUrl = event?.destination?.url || "";
       if (destinationUrl.startsWith("about:blank")) return;
       const href = destinationUrl || location.href;
       if (href !== location.href) {
-        location.href = href;
+        operation(href);
       }
     }
     unsafeWindow?.navigation?.addEventListener("navigate", urlChange);
@@ -591,7 +591,9 @@
         }
       },
       onInit: async function () {
-        monitorUrlChange();
+        monitorUrlChange((href) => {
+          location.href = href;
+        });
       },
     },
     {

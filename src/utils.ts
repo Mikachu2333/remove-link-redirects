@@ -68,16 +68,15 @@ export function removeLinkRedirect(
 /**
  * 监听URL变化
  */
-export function monitorUrlChange() {
+export function monitorUrlChange(operation) {
   function urlChange(event) {
     const destinationUrl = event?.destination?.url || "";
     if (destinationUrl.startsWith("about:blank")) return;
     const href = destinationUrl || location.href;
     if (href !== location.href) {
-      location.href = href;
+      operation(href);
     }
   }
-
   // @ts-ignore
   unsafeWindow?.navigation?.addEventListener("navigate", urlChange);
   unsafeWindow.addEventListener("replaceState", urlChange);
