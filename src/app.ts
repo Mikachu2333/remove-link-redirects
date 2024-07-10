@@ -27,7 +27,7 @@ export class App {
           this.handleNode(node);
         } else {
           // @ts-ignore
-          const aNodes = node.querySelectorAll?.("a");
+          const aNodes = node.querySelectorAll?.(`a:not([${Marker.RedirectStatusDone}])`);
           aNodes?.forEach((aNode: HTMLAnchorElement) => this.handleNode(aNode));
         }
       });
