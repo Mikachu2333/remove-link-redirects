@@ -83,13 +83,12 @@ const webpackConfig = {
       (() => {
         const result = { "process.env.NODE_ENV": '"development"' };
         for (const key in process.env) {
-          // rome-ignore lint/suspicious/noPrototypeBuiltins: <explanation>
           if (process.env.hasOwnProperty(key)) {
             result[`process.env.${key}`] = JSON.stringify(process.env[key]);
           }
         }
         return result;
-      })(),
+      })()
     ),
     new webpack.LoaderOptionsPlugin({
       minimize: true,
