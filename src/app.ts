@@ -28,7 +28,7 @@ export class App {
         } else {
           // @ts-ignore
           const aNodes = node.querySelectorAll?.("a");
-          aNodes?.forEach((aNode) => this.handleNode(aNode));
+          aNodes?.forEach((aNode: HTMLAnchorElement) => this.handleNode(aNode));
         }
       });
     }
@@ -84,7 +84,7 @@ export class App {
    * 注册服务提供者
    * @param providerConfigs
    */
-  public registerProvider(providerConfigs: IProviderConfig[]): this {
+  public registerProviders(providerConfigs: IProviderConfig[]): this {
     for (const providerConfig of providerConfigs) {
       if (providerConfig.test === false) {
         continue;

@@ -235,4 +235,4 @@ const providers = [
 ];
 
 const app = new App();
-app.registerProvider(providers).bootstrap();
+app.registerProviders(providers).bootstrap();

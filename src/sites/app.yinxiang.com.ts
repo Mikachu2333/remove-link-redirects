@@ -38,7 +38,7 @@ export class YinXiangProvider implements IProvider {
           if (dom.hasAttribute("redirect-link-removed")) {
             return;
           }
-          dom.setAttribute("redirect-link-removed", "1");
+          dom.setAttribute("redirect-link-removed", "true");
           (dom as HTMLIFrameElement).contentWindow.document.addEventListener("mouseover", handler);
           break;
         }

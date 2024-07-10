@@ -24,7 +24,7 @@ export class GooglePlayProvider implements IProvider {
         continue;
       }
 
-      ele.setAttribute(Marker.RedirectStatusDone, ele.href);
+      ele.setAttribute(Marker.RedirectStatusDone, "true");
       ele.setAttribute("target", "_blank");
 
       ele.addEventListener(

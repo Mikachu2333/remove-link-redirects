@@ -2,9 +2,8 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.1.5
+// @version           2.1.6
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-10
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
@@ -129,7 +128,7 @@
      * 注册服务提供者
      * @param providers
      */
-    registerProvider(providers) {
+    registerProviders(providers) {
       for (const provider of providers) {
         if (provider.urlTest === false) {
           continue;
@@ -170,7 +169,6 @@
   function matchLinkFromUrl(element, tester) {
     const match = tester.exec(element.href);
     if (!match || !match[1]) return "";
-
     try {
       return decodeURIComponent(match[1]);
     } catch {
@@ -207,7 +205,7 @@
    */
   function removeLinkRedirect(element, realUrl, options = {}) {
     if (options.force || (realUrl && element.href !== realUrl)) {
-      element.setAttribute("redirect-status-done", element.href);
+      element.setAttribute(Marker.RedirectStatusDone, "true");
       element.href = realUrl;
     }
   }
@@ -292,7 +290,7 @@
               if (dom.hasAttribute("redirect-link-removed")) {
                 return;
               }
-              dom.setAttribute("redirect-link-removed", "1");
+              dom.setAttribute("redirect-link-removed", "true");
               dom.contentWindow.document.addEventListener("mouseover", handler);
               break;
             }
@@ -463,7 +461,7 @@
           if (!ele.href || ele.getAttribute(Marker.RedirectStatusDone)) {
             continue;
           }
-          ele.setAttribute(Marker.RedirectStatusDone, ele.href);
+          ele.setAttribute(Marker.RedirectStatusDone, "true");
           ele.setAttribute("target", "_blank");
           ele.addEventListener(
             "click",
@@ -499,14 +497,13 @@
         if (!this.test.test(element.href)) {
           return;
         }
-        let url = "";
+        let url = element.href;
         const text = element.innerText || element.textContent || "";
+        const isUrl = /https?:\/\//.test(text);
         try {
-          if (/https?:\/\//.test(text)) {
-            url = decodeURIComponent(text);
-          }
+          url = isUrl ? decodeURIComponent(text) : element.href;
         } catch (e) {
-          url = /https?:\/\//.test(text) ? text : "";
+          url = isUrl ? text : element.href;
         }
         if (url) {
           removeLinkRedirect(element, url);
@@ -676,9 +673,7 @@
       urlTest: /www\.sogou\.com/,
       linkTest: /www\.sogou\.com\/link\?url=/,
       resolve: function (element) {
-        // 从这个a往上找到的第一个class=vrwrap的元素
         const vrwrap = element.closest(".vrwrap");
-        // 往子孙找到的第一个class包含r-sech的元素
         const rSech = vrwrap.querySelector(".r-sech");
         const url = rSech.getAttribute("data-url");
         removeLinkRedirect(element, url);
@@ -722,5 +717,5 @@
   ];
 
   const app = new App();
-  app.registerProvider(providers).bootstrap();
+  app.registerProviders(providers).bootstrap();
 })();

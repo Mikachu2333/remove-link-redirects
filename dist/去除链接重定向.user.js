@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.1.5
+// @version           2.1.6
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
@@ -135,7 +135,7 @@ class App {
      * 注册服务提供者
      * @param providerConfigs
      */
-    registerProvider(providerConfigs) {
+    registerProviders(providerConfigs) {
         for (const providerConfig of providerConfigs) {
             if (providerConfig.test === false) {
                 continue;
@@ -226,7 +226,7 @@ async function retryAsyncOperation(operation, maxRetries, currentRetry = 0) {
  */
 function removeLinkRedirect(aElement, realUrl, options = {}) {
     if (options.force || (realUrl && aElement.href !== realUrl)) {
-        aElement.setAttribute("redirect-status-done", aElement.href);
+        aElement.setAttribute(Marker.RedirectStatusDone, "true");
         aElement.href = realUrl;
     }
 }
@@ -337,7 +337,7 @@ class YinXiangProvider {
                     if (dom.hasAttribute("redirect-link-removed")) {
                         return;
                     }
-                    dom.setAttribute("redirect-link-removed", "1");
+                    dom.setAttribute("redirect-link-removed", "true");
                     dom.contentWindow.document.addEventListener("mouseover", handler);
                     break;
                 }
@@ -539,7 +539,7 @@ class GooglePlayProvider {
             if (ele.getAttribute(utils_1.Marker.RedirectStatusDone)) {
                 continue;
             }
-            ele.setAttribute(utils_1.Marker.RedirectStatusDone, ele.href);
+            ele.setAttribute(utils_1.Marker.RedirectStatusDone, "true");
             ele.setAttribute("target", "_blank");
             ele.addEventListener("click", (event) => {
                 event.stopPropagation();
@@ -857,9 +857,7 @@ class SoGouProvider {
         this.test = /www\.sogou\.com\/link\?url=/;
     }
     resolve(aElement) {
-        // 从这个a往上找到的第一个class=vrwrap的元素
         const vrwrap = aElement.closest(".vrwrap");
-        // 往子孙找到的第一个class包含r-sech的元素
         const rSech = vrwrap.querySelector(".r-sech");
         const url = rSech.getAttribute("data-url");
         (0, utils_1.removeLinkRedirect)(aElement, url);
@@ -1367,7 +1365,7 @@ const providers = [
     },
 ];
 const app = new app_1.App();
-app.registerProvider(providers).bootstrap();
+app.registerProviders(providers).bootstrap();
 
 })();
 

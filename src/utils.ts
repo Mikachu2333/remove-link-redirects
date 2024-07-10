@@ -60,7 +60,7 @@ export function removeLinkRedirect(
   options: IRemoveLinkRedirectOption = {},
 ) {
   if (options.force || (realUrl && aElement.href !== realUrl)) {
-    aElement.setAttribute("redirect-status-done", aElement.href);
+    aElement.setAttribute(Marker.RedirectStatusDone, "true");
     aElement.href = realUrl;
   }
 }
