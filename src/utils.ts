@@ -64,3 +64,24 @@ export function removeLinkRedirect(
     aElement.href = realUrl;
   }
 }
+
+/**
+ * 监听URL变化
+ */
+export function monitorUrlChange() {
+  function urlChange(event) {
+    const destinationUrl = event?.destination?.url || "";
+    if (destinationUrl.startsWith("about:blank")) return;
+    const href = destinationUrl || location.href;
+    if (href !== location.href) {
+      location.href = href;
+    }
+  }
+
+  // @ts-ignore
+  unsafeWindow?.navigation?.addEventListener("navigate", urlChange);
+  unsafeWindow.addEventListener("replaceState", urlChange);
+  unsafeWindow.addEventListener("pushState", urlChange);
+  unsafeWindow.addEventListener("popState", urlChange);
+  unsafeWindow.addEventListener("hashchange", urlChange);
+}

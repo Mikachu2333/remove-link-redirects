@@ -1,5 +1,5 @@
 import { IProvider } from "@/provider";
-import { removeLinkRedirect, retryAsyncOperation } from "@/utils";
+import { removeLinkRedirect, retryAsyncOperation, monitorUrlChange } from "@/utils";
 
 export class BaiduProvider implements IProvider {
   public test = /www\.baidu\.com\/link\?url=/;
@@ -27,5 +27,10 @@ export class BaiduProvider implements IProvider {
     } else {
       this.handleOneElement(aElement);
     }
+  }
+
+  public async onInit(): Promise<this> {
+    monitorUrlChange();
+    return;
   }
 }

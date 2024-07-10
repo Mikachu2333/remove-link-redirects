@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.1.1
+// @version           2.1.3
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
@@ -169,6 +169,7 @@ exports.Marker = void 0;
 exports.matchLinkFromUrl = matchLinkFromUrl;
 exports.retryAsyncOperation = retryAsyncOperation;
 exports.removeLinkRedirect = removeLinkRedirect;
+exports.monitorUrlChange = monitorUrlChange;
 var Marker;
 (function (Marker) {
     Marker["RedirectStatusDone"] = "redirect-status-done";
@@ -222,6 +223,28 @@ function removeLinkRedirect(aElement, realUrl, options = {}) {
         aElement.setAttribute("redirect-status-done", aElement.href);
         aElement.href = realUrl;
     }
+}
+/**
+ * 监听URL变化
+ */
+function monitorUrlChange() {
+    var _a;
+    function urlChange(event) {
+        var _a;
+        const destinationUrl = ((_a = event === null || event === void 0 ? void 0 : event.destination) === null || _a === void 0 ? void 0 : _a.url) || "";
+        if (destinationUrl.startsWith("about:blank"))
+            return;
+        const href = destinationUrl || location.href;
+        if (href !== location.href) {
+            location.href = href;
+        }
+    }
+    // @ts-ignore
+    (_a = unsafeWindow === null || unsafeWindow === void 0 ? void 0 : unsafeWindow.navigation) === null || _a === void 0 ? void 0 : _a.addEventListener("navigate", urlChange);
+    unsafeWindow.addEventListener("replaceState", urlChange);
+    unsafeWindow.addEventListener("pushState", urlChange);
+    unsafeWindow.addEventListener("popState", urlChange);
+    unsafeWindow.addEventListener("hashchange", urlChange);
 }
 
 
@@ -696,6 +719,10 @@ class BaiduProvider {
         else {
             this.handleOneElement(aElement);
         }
+    }
+    async onInit() {
+        (0, utils_1.monitorUrlChange)();
+        return;
     }
 }
 exports.BaiduProvider = BaiduProvider;
