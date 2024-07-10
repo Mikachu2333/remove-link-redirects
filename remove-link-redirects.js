@@ -134,7 +134,7 @@
         if (provider.urlTest instanceof RegExp && !provider.urlTest.test(location.hostname)) {
           continue;
         }
-        if (typeof provider.urlTest === "function" && !provider.urlTest() === false) {
+        if (typeof provider.urlTest === "function" && !provider.urlTest()) {
           continue;
         }
         this.registeredProviders.push(provider);
