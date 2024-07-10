@@ -25,6 +25,10 @@ export class App {
       mutation.addedNodes.forEach((node) => {
         if (node instanceof HTMLAnchorElement) {
           this.handleNode(node);
+        } else {
+          // @ts-ignore
+          const aNodes = node.querySelectorAll?.("a");
+          aNodes?.forEach((aNode) => this.handleNode(aNode));
         }
       });
     }
