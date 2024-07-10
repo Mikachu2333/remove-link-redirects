@@ -283,10 +283,11 @@
       name: "Bing",
       urlTest: /bing\.com/,
       linkTest: /.+\.bing\.com\/ck\/a\?.*&u=a1(.*)&ntb=1/,
+      textDecoder: new TextDecoder("utf-8"),
       resolve: function (element) {
         removeLinkRedirect(
           element,
-          BingProvider.textDecoder.decode(
+          this.textDecoder.decode(
             Uint8Array.from(
               Array.from(
                 atob(
