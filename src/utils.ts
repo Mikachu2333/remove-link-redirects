@@ -3,19 +3,6 @@ export enum Marker {
 }
 
 /**
- * 监听 URL 变化
- * @param event
- */
-export function urlChange(event): void {
-  const destinationUrl = event?.destination?.url || "";
-  if (destinationUrl.startsWith("about:blank")) return;
-  const href = destinationUrl || location.href;
-  if (href !== location.href) {
-    location.href = href;
-  }
-}
-
-/**
  * 根据url上的路径匹配，去除重定向
  * @param {HTMLAnchorElement} aElement
  * @param {RegExp} tester

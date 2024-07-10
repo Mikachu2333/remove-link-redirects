@@ -2,9 +2,9 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.0.7
+// @version           2.1.1
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-09 15:44:55
+// @update            2024-07-10
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
@@ -82,7 +82,7 @@
      * @returns
      */
     handleNode(node) {
-      for (const provider of this.providers) {
+      for (const provider of this.registeredProviders) {
         if (this.isMatchProvider(node, provider)) {
           provider.resolve(node);
           break;
@@ -102,7 +102,7 @@
       if (provider.linkTest instanceof RegExp && !provider.linkTest.test(element.href)) {
         return false;
       }
-      if (typeof provider.linkTest === "function" && !provider.test(element)) {
+      if (typeof provider.linkTest === "function" && !provider.linkTest(element)) {
         return false;
       }
       if (provider.linkTest instanceof Boolean) {
@@ -115,7 +115,7 @@
      * 当页面准备就绪时，进行初始化动作
      */
     async pageOnReady() {
-      for (const provider of this.providers) {
+      for (const provider of this.registeredProviders) {
         if (provider.onInit) {
           await provider.onInit();
         }
@@ -134,11 +134,12 @@
         if (provider.urlTest instanceof RegExp && !provider.urlTest.test(location.hostname)) {
           continue;
         }
-        if (typeof provider.urlTest === "function" && provider.urlTest() === false) {
+        if (typeof provider.urlTest === "function" && !provider.urlTest() === false) {
           continue;
         }
         this.registeredProviders.push(provider);
       }
+      return this;
     }
 
     /**
@@ -156,19 +157,6 @@
   const Marker = {
     RedirectStatusDone: "redirect-status-done",
   };
-
-  /**
-   * 监听 URL 变化
-   * @param event
-   */
-  function urlChange(event) {
-    const destinationUrl = event?.destination?.url || "";
-    if (destinationUrl.startsWith("about:blank")) return;
-    const href = destinationUrl || location.href;
-    if (href !== location.href) {
-      location.href = href;
-    }
-  }
 
   /**
    * 根据url上的路径匹配，去除重定向
@@ -226,7 +214,7 @@
       name: "如有乐享",
       urlTest: /51\.ruyo\.net/,
       linkTest: /\/[^\?]*\?u=(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, new URL(element.href).searchParams.get("u"));
       },
     },
@@ -234,7 +222,7 @@
       name: "Mozilla",
       urlTest: /addons\.mozilla\.org/,
       linkTest: /outgoing\.prod\.mozaws\.net\/v\d\/\w+\/(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, matchLinkFromUrl(element, this.linkTest));
       },
     },
@@ -242,7 +230,7 @@
       name: "爱发电",
       urlTest: /afdian\.net/,
       linkTest: /afdian\.net\/link\?target=(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
       },
     },
@@ -250,7 +238,7 @@
       name: "印象笔记",
       urlTest: /app\.yinxiang\.com/,
       linkTest: /^http:\/\//,
-      resolve: (element) => {
+      resolve: function (element) {
         if (element.hasAttribute("data-mce-href")) {
           if (!element.onclick) {
             removeLinkRedirect(element, element.href, { force: true });
@@ -269,7 +257,7 @@
           removeLinkRedirect(element, new URL(element.href).searchParams.get("dest"));
         }
       },
-      onInit: async () => {
+      onInit: async function () {
         const handler = (e) => {
           const dom = e.target;
           const tagName = dom.tagName.toUpperCase();
@@ -295,7 +283,7 @@
       name: "Bing",
       urlTest: /bing\.com/,
       linkTest: /.+\.bing\.com\/ck\/a\?.*&u=a1(.*)&ntb=1/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(
           element,
           BingProvider.textDecoder.decode(
@@ -318,7 +306,7 @@
       name: "51CTO博客",
       urlTest: /blog\.51cto\.com/,
       linkTest: true,
-      resolve: (element) => {
+      resolve: function (element) {
         this.container = document.querySelector(".article-detail");
         if (this.container?.contains(element)) {
           if (!element.onclick && element.href) {
@@ -339,7 +327,7 @@
       name: "CSDN",
       urlTest: /blog\.csdn\.net/,
       linkTest: /^https?:\/\//,
-      resolve: (element) => {
+      resolve: function (element) {
         this.container = document.querySelector("#content_views");
         if (this.container?.contains(element)) {
           if (!element.onclick && element.origin !== window.location.origin) {
@@ -359,7 +347,7 @@
       name: "知乎日报",
       urlTest: /daily\.zhihu\.com/,
       linkTest: /zhihu\.com\/\?target=(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
       },
     },
@@ -367,7 +355,7 @@
       name: "Google Docs",
       urlTest: /docs\.google\.com/,
       linkTest: /www\.google\.com\/url\?q=(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, new URL(element.href).searchParams.get("q"));
       },
     },
@@ -375,7 +363,7 @@
       name: "Pocket",
       urlTest: /getpocket\.com/,
       linkTest: /getpocket\.com\/redirect\?url=(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, new URL(element.href).searchParams.get("url"));
       },
     },
@@ -383,7 +371,7 @@
       name: "Gitee",
       urlTest: /gitee\.com/,
       linkTest: /gitee\.com\/link\?target=(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
       },
     },
@@ -391,7 +379,7 @@
       name: "InfoQ",
       urlTest: /infoq\.cn/,
       linkTest: /infoq\.cn\/link\?target=(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
       },
     },
@@ -399,7 +387,7 @@
       name: "掘金",
       urlTest: /juejin\.(im|cn)/,
       linkTest: /link\.juejin\.(im|cn)\/\?target=(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         const finalURL = new URL(element.href).searchParams.get("target");
         removeLinkRedirect(element, finalURL);
         if (this.linkTest.test(element.title)) {
@@ -411,7 +399,7 @@
       name: "QQ邮箱",
       urlTest: /mail\.qq\.com/,
       linkTest: true,
-      resolve: (element) => {
+      resolve: function (element) {
         this.container = document.querySelector("#contentDiv");
         if (this.container?.contains(element)) {
           if (element.onclick) {
@@ -429,14 +417,14 @@
       name: "OS China",
       urlTest: /oschina\.net/,
       linkTest: /oschina\.net\/action\/GoToLink\?url=(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, new URL(element.href).searchParams.get("url"));
       },
     },
     {
       name: "Google Play",
       urlTest: /play\.google\.com/,
-      linkTest: (element) => {
+      linkTest: function (element) {
         if (/google\.com\/url\?q=(.*)/.test(element.href)) {
           return true;
         } else if (/^\/store\/apps\/details/.test(location.pathname)) {
@@ -444,7 +432,7 @@
         }
         return false;
       },
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, new URL(element.href).searchParams.get("q"));
         // 移除开发者栏目下的重定向
         const eles = [].slice.call(document.querySelectorAll("a.hrTbp"));
@@ -468,7 +456,7 @@
       name: "少数派",
       urlTest: /sspai\.com/,
       linkTest: /sspai\.com\/link\?target=(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
       },
     },
@@ -476,7 +464,7 @@
       name: "Steam Community",
       urlTest: /steamcommunity\.com/,
       linkTest: /steamcommunity\.com\/linkfilter\/\?url=(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, new URL(element.href).searchParams.get("url"));
       },
     },
@@ -484,7 +472,7 @@
       name: "百度贴吧",
       urlTest: /tieba\.baidu\.com/,
       linkTest: /jump\d*\.bdimg\.com/,
-      resolve: (element) => {
+      resolve: function (element) {
         if (!this.test.test(element.href)) {
           return;
         }
@@ -506,8 +494,8 @@
       name: "Twitter",
       urlTest: /twitter\.com/,
       linkTest: /t\.co\/\w+/,
-      resolve: (element) => {
-        if (!this.test.test(element.href)) {
+      resolve: function (element) {
+        if (!this.linkTest.test(element.href)) {
           return;
         }
         if (/https?:\/\//.test(element.title)) {
@@ -526,7 +514,7 @@
       name: "百度视频",
       urlTest: /v\.baidu\.com/,
       linkTest: /v\.baidu\.com\/link\?url=/,
-      resolve: (element) => {
+      resolve: function (element) {
         GM.xmlHttpRequest({
           method: "GET",
           url: element.href,
@@ -546,8 +534,8 @@
       name: "微博",
       urlTest: /\.weibo\.com/,
       linkTest: /t\.cn\/\w+/,
-      resolve: (element) => {
-        if (!(this.test.test(element.href) && /^https?:\/\//.test(element.title))) {
+      resolve: function (element) {
+        if (!(this.linkTest.test(element.href) && /^https?:\/\//.test(element.title))) {
           return;
         }
         const url = decodeURIComponent(element.title);
@@ -574,7 +562,7 @@
           }
         }, 3);
       },
-      resolve: async (element) => {
+      resolve: async function (element) {
         const url = element.closest(".cos-row") ? null : element.closest(".c-container")?.getAttribute("mu");
         if (url && url !== "null" && url !== "undefined" && !this.unresolvable.some((u) => url.includes(u))) {
           removeLinkRedirect(element, url);
@@ -587,7 +575,7 @@
       name: "豆瓣",
       urlTest: /douban\.com/,
       linkTest: /douban\.com\/link2\/?\?url=(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, new URL(element.href).searchParams.get("url"));
       },
     },
@@ -595,7 +583,7 @@
       name: "Google搜索",
       urlTest: /\w+\.google\./,
       linkTest: true,
-      resolve: (element) => {
+      resolve: function (element) {
         const traceProperties = ["ping", "data-jsarwt", "data-usg", "data-ved"];
         // 移除追踪
         for (const property of traceProperties) {
@@ -621,7 +609,7 @@
     {
       name: "简书",
       urlTest: /www\.jianshu\.com/,
-      linkTest: (element) => {
+      linkTest: function (element) {
         const isLink1 = /links\.jianshu\.com\/go/.test(element.href);
         const isLink2 = /link\.jianshu\.com(\/)?\?t=/.test(element.href);
         const isLink3 = /jianshu\.com\/go-wild\/?\?(.*)url=/.test(element.href);
@@ -630,7 +618,7 @@
         }
         return false;
       },
-      resolve: (element) => {
+      resolve: function (element) {
         const search = new URL(element.href).searchParams;
         removeLinkRedirect(element, search.get("to") || search.get("t") || search.get("url"));
       },
@@ -639,7 +627,7 @@
       name: "标志情报局",
       urlTest: /www\.logonews\.cn/,
       linkTest: /link\.logonews\.cn\/\?url=(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         removeLinkRedirect(element, new URL(element.href).searchParams.get("url"));
       },
     },
@@ -647,7 +635,7 @@
       name: "360搜索",
       urlTest: /www\.so\.com/,
       linkTest: /so\.com\/link\?(.*)/,
-      resolve: (element) => {
+      resolve: function (element) {
         const url = element.getAttribute("data-mdurl") || element.getAttribute("e-landurl");
         if (url) {
           removeLinkRedirect(element, url);
@@ -661,17 +649,52 @@
       name: "搜狗搜索",
       urlTest: /www\.sogou\.com/,
       linkTest: /www\.sogou\.com\/link\?url=/,
-      resolve: (element) => {
+      resolve: function (element) {
         // 从这个a往上找到的第一个class=vrwrap的元素
-        const vrwrap = aElement.closest(".vrwrap");
+        const vrwrap = element.closest(".vrwrap");
         // 往子孙找到的第一个class包含r-sech的元素
         const rSech = vrwrap.querySelector(".r-sech");
         const url = rSech.getAttribute("data-url");
-        removeLinkRedirect(aElement, url);
+        removeLinkRedirect(element, url);
       },
     },
     {
-      
-    }
+      name: "Youtube",
+      urlTest: /www\.youtube\.com/,
+      linkTest: /www\.youtube\.com\/redirect\?.{1,}/,
+      resolve: function (element) {
+        removeLinkRedirect(element, new URL(element.href).searchParams.get("q"));
+      },
+    },
+    {
+      name: "知乎",
+      urlTest: /www\.zhihu\.com/,
+      linkTest: /zhihu\.com\/\?target=(.*)/,
+      resolve: function (element) {
+        removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
+      },
+    },
+    {
+      name: "百度学术",
+      urlTest: /xueshu\.baidu\.com/,
+      linkTest: /xueshu\.baidu\.com\/s?\?(.*)/,
+      resolve: function (element) {
+        const realHref = element.getAttribute("data-link") || element.getAttribute("data-url");
+        if (realHref) {
+          removeLinkRedirect(element, decodeURIComponent(realHref));
+        }
+      },
+    },
+    {
+      name: "知乎专栏",
+      urlTest: /zhuanlan\.zhihu\.com/,
+      linkTest: /link\.zhihu\.com\/\?target=(.*)/,
+      resolve: function (element) {
+        removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
+      },
+    },
   ];
+  
+  const app = new App();
+  app.registerProvider(providers).bootstrap();
 })();

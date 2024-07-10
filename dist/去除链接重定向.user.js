@@ -2,9 +2,9 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.0.7
+// @version           2.1.1
 // @namespace         Violentmonkey Scripts
-// @update            2024-07-09 15:44:55
+// @update            2024-07-10 08:01:16
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
@@ -13,7 +13,6 @@
 // @include           *://www.google*
 // @match             *://www.google.com/*
 // @match             *://docs.google.com/*
-// @match             *://mail.google.com/*
 // @match             *://play.google.com/*
 // @match             *://www.youtube.com/*
 // @match             *://encrypted.google.com/*
@@ -168,7 +167,6 @@ exports.App = App;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Marker = void 0;
-exports.urlChange = urlChange;
 exports.matchLinkFromUrl = matchLinkFromUrl;
 exports.retryAsyncOperation = retryAsyncOperation;
 exports.removeLinkRedirect = removeLinkRedirect;
@@ -176,20 +174,6 @@ var Marker;
 (function (Marker) {
     Marker["RedirectStatusDone"] = "redirect-status-done";
 })(Marker || (exports.Marker = Marker = {}));
-/**
- * 监听 URL 变化
- * @param event
- */
-function urlChange(event) {
-    var _a;
-    const destinationUrl = ((_a = event === null || event === void 0 ? void 0 : event.destination) === null || _a === void 0 ? void 0 : _a.url) || "";
-    if (destinationUrl.startsWith("about:blank"))
-        return;
-    const href = destinationUrl || location.href;
-    if (href !== location.href) {
-        location.href = href;
-    }
-}
 /**
  * 根据url上的路径匹配，去除重定向
  * @param {HTMLAnchorElement} aElement
@@ -452,31 +436,6 @@ exports.PocketProvider = PocketProvider;
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.GmailProvider = void 0;
-const utils_1 = __webpack_require__(2);
-class GmailProvider {
-    constructor() {
-        this.test = true;
-        this.REDIRECT_PROPERTY = "data-saferedirecturl";
-    }
-    resolve(aElement) {
-        // 移除这个属性，那么 a 链接就不会跳转
-        // FIXME: gmail 是多层 iframe 嵌套
-        if (aElement.getAttribute(this.REDIRECT_PROPERTY)) {
-            aElement.removeAttribute(this.REDIRECT_PROPERTY);
-            (0, utils_1.removeLinkRedirect)(aElement, aElement.href);
-        }
-    }
-}
-exports.GmailProvider = GmailProvider;
-
-
-/***/ }),
-/* 12 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.JuejinProvider = void 0;
 const utils_1 = __webpack_require__(2);
 class JuejinProvider {
@@ -495,7 +454,7 @@ exports.JuejinProvider = JuejinProvider;
 
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -524,7 +483,7 @@ exports.QQMailProvider = QQMailProvider;
 
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -564,7 +523,7 @@ exports.GooglePlayProvider = GooglePlayProvider;
 
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -583,7 +542,7 @@ exports.SteamProvider = SteamProvider;
 
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -617,7 +576,7 @@ exports.TiebaProvider = TiebaProvider;
 
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -648,7 +607,7 @@ exports.TwitterProvider = TwitterProvider;
 
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -679,7 +638,7 @@ exports.BaiduVideoProvider = BaiduVideoProvider;
 
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -705,7 +664,7 @@ exports.WeboProvider = WeboProvider;
 
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -744,7 +703,7 @@ exports.BaiduProvider = BaiduProvider;
 
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -763,7 +722,7 @@ exports.DouBanProvider = DouBanProvider;
 
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -801,7 +760,7 @@ exports.GoogleProvider = GoogleProvider;
 
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -829,7 +788,7 @@ exports.JianShuProvider = JianShuProvider;
 
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -854,7 +813,7 @@ exports.SoProvider = SoProvider;
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -878,7 +837,7 @@ exports.SoGouProvider = SoGouProvider;
 
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -897,7 +856,7 @@ exports.YoutubeProvider = YoutubeProvider;
 
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -916,7 +875,7 @@ exports.ZhihuProvider = ZhihuProvider;
 
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -938,7 +897,7 @@ exports.BaiduXueshuProvider = BaiduXueshuProvider;
 
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -957,7 +916,7 @@ exports.ZhihuZhuanlanProvider = ZhihuZhuanlanProvider;
 
 
 /***/ }),
-/* 30 */
+/* 29 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -976,7 +935,7 @@ exports.LogonewsProvider = LogonewsProvider;
 
 
 /***/ }),
-/* 31 */
+/* 30 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -995,7 +954,7 @@ exports.AfDianNetProvider = AfDianNetProvider;
 
 
 /***/ }),
-/* 32 */
+/* 31 */
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -1027,7 +986,7 @@ exports.Blog51CTO = Blog51CTO;
 
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1046,7 +1005,7 @@ exports.InfoQProvider = InfoQProvider;
 
 
 /***/ }),
-/* 34 */
+/* 33 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1065,7 +1024,7 @@ exports.GiteeProvider = GiteeProvider;
 
 
 /***/ }),
-/* 35 */
+/* 34 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1084,7 +1043,7 @@ exports.SSPaiProvider = SSPaiProvider;
 
 
 /***/ }),
-/* 36 */
+/* 35 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1140,10 +1099,8 @@ var __webpack_exports__ = {};
 (() => {
 var exports = __webpack_exports__;
 
-var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const app_1 = __webpack_require__(1);
-const utils_1 = __webpack_require__(2);
 const _51_ruyo_net_1 = __webpack_require__(3);
 const addons_mozilla_org_1 = __webpack_require__(4);
 const app_yinxiang_com_1 = __webpack_require__(5);
@@ -1152,32 +1109,31 @@ const oschina_com_1 = __webpack_require__(7);
 const daily_zhihu_com_1 = __webpack_require__(8);
 const docs_google_com_1 = __webpack_require__(9);
 const getpocket_com_1 = __webpack_require__(10);
-const gmail_google_com_1 = __webpack_require__(11);
-const juejin_com_1 = __webpack_require__(12);
-const mail_qq_com_1 = __webpack_require__(13);
-const play_google_com_1 = __webpack_require__(14);
-const steamcommunity_com_1 = __webpack_require__(15);
-const tieba_baidu_com_1 = __webpack_require__(16);
-const twitter_com_1 = __webpack_require__(17);
-const video_baidu_com_1 = __webpack_require__(18);
-const weibo_com_1 = __webpack_require__(19);
-const www_baidu_com_1 = __webpack_require__(20);
-const www_douban_com_1 = __webpack_require__(21);
-const www_google_com_1 = __webpack_require__(22);
-const www_jianshu_com_1 = __webpack_require__(23);
-const www_so_com_1 = __webpack_require__(24);
-const www_sogou_com_1 = __webpack_require__(25);
-const www_youtube_com_1 = __webpack_require__(26);
-const www_zhihu_com_1 = __webpack_require__(27);
-const xueshu_baidu_com_1 = __webpack_require__(28);
-const zhuanlan_zhihu_com_1 = __webpack_require__(29);
-const www_logonews_cn_1 = __webpack_require__(30);
-const afadian_net_1 = __webpack_require__(31);
-const blog_51cto_com_1 = __webpack_require__(32);
-const infoq_cn_1 = __webpack_require__(33);
-const gitee_com_1 = __webpack_require__(34);
-const sspai_com_1 = __webpack_require__(35);
-const bing_com_1 = __webpack_require__(36);
+const juejin_com_1 = __webpack_require__(11);
+const mail_qq_com_1 = __webpack_require__(12);
+const play_google_com_1 = __webpack_require__(13);
+const steamcommunity_com_1 = __webpack_require__(14);
+const tieba_baidu_com_1 = __webpack_require__(15);
+const twitter_com_1 = __webpack_require__(16);
+const video_baidu_com_1 = __webpack_require__(17);
+const weibo_com_1 = __webpack_require__(18);
+const www_baidu_com_1 = __webpack_require__(19);
+const www_douban_com_1 = __webpack_require__(20);
+const www_google_com_1 = __webpack_require__(21);
+const www_jianshu_com_1 = __webpack_require__(22);
+const www_so_com_1 = __webpack_require__(23);
+const www_sogou_com_1 = __webpack_require__(24);
+const www_youtube_com_1 = __webpack_require__(25);
+const www_zhihu_com_1 = __webpack_require__(26);
+const xueshu_baidu_com_1 = __webpack_require__(27);
+const zhuanlan_zhihu_com_1 = __webpack_require__(28);
+const www_logonews_cn_1 = __webpack_require__(29);
+const afadian_net_1 = __webpack_require__(30);
+const blog_51cto_com_1 = __webpack_require__(31);
+const infoq_cn_1 = __webpack_require__(32);
+const gitee_com_1 = __webpack_require__(33);
+const sspai_com_1 = __webpack_require__(34);
+const bing_com_1 = __webpack_require__(35);
 const providers = [
     {
         // 测试地址: https://www.zhihu.com/question/25258775
@@ -1207,11 +1163,6 @@ const providers = [
         name: "Google Docs",
         test: /docs\.google\.com/,
         provider: docs_google_com_1.GoogleDocsProvider,
-    },
-    {
-        name: "Gmail",
-        test: /mail\.google\.com/,
-        provider: gmail_google_com_1.GmailProvider,
     },
     {
         // 测试地址: https://play.google.com/store/movies/details/%E7%A7%BB%E5%8B%95%E8%BF%B7%E5%AE%AE_%E6%AD%BB%E4%BA%A1%E8%A7%A3%E8%97%A5?id=YNy7gRqwtMk
@@ -1383,12 +1334,6 @@ const providers = [
         provider: bing_com_1.BingProvider,
     },
 ];
-// @ts-ignore
-(_a = unsafeWindow === null || unsafeWindow === void 0 ? void 0 : unsafeWindow.navigation) === null || _a === void 0 ? void 0 : _a.addEventListener("navigate", utils_1.urlChange);
-unsafeWindow.addEventListener("replaceState", utils_1.urlChange);
-unsafeWindow.addEventListener("pushState", utils_1.urlChange);
-unsafeWindow.addEventListener("popState", utils_1.urlChange);
-unsafeWindow.addEventListener("hashchange", utils_1.urlChange);
 const app = new app_1.App();
 app.registerProvider(providers).bootstrap();
 

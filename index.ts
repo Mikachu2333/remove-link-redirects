@@ -1,5 +1,4 @@
 import { App } from "@/app";
-import { urlChange } from "@/utils";
 import { RuyoProvider } from "@/sites/51.ruyo.net";
 import { MozillaProvider } from "@/sites/addons.mozilla.org";
 import { YinXiangProvider } from "@/sites/app.yinxiang.com";
@@ -234,13 +233,6 @@ const providers = [
     provider: BingProvider,
   },
 ];
-
-// @ts-ignore
-unsafeWindow?.navigation?.addEventListener("navigate", urlChange);
-unsafeWindow.addEventListener("replaceState", urlChange);
-unsafeWindow.addEventListener("pushState", urlChange);
-unsafeWindow.addEventListener("popState", urlChange);
-unsafeWindow.addEventListener("hashchange", urlChange);
 
 const app = new App();
 app.registerProvider(providers).bootstrap();
