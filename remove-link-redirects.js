@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.1.8
+// @version           2.1.9
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
@@ -71,7 +71,9 @@
           if (node instanceof HTMLAnchorElement) {
             this.handleNode(node);
           } else {
-            const aNodes = node.querySelectorAll?.(`a:not([${Marker.RedirectStatusDone}])`);
+            const aNodes = node.querySelectorAll?.(
+              `a:not([${Marker.RedirectStatusDone}])`
+            );
             aNodes?.forEach((aNode) => this.handleNode(aNode));
           }
         });
@@ -101,10 +103,16 @@
       if (element.getAttribute(Marker.RedirectStatusDone)) {
         return false;
       }
-      if (provider.linkTest instanceof RegExp && !provider.linkTest.test(element.href)) {
+      if (
+        provider.linkTest instanceof RegExp &&
+        !provider.linkTest.test(element.href)
+      ) {
         return false;
       }
-      if (typeof provider.linkTest === "function" && !provider.linkTest(element)) {
+      if (
+        typeof provider.linkTest === "function" &&
+        !provider.linkTest(element)
+      ) {
         return false;
       }
       if (provider.linkTest instanceof Boolean) {
@@ -133,7 +141,10 @@
         if (provider.urlTest === false) {
           continue;
         }
-        if (provider.urlTest instanceof RegExp && !provider.urlTest.test(location.hostname)) {
+        if (
+          provider.urlTest instanceof RegExp &&
+          !provider.urlTest.test(location.hostname)
+        ) {
           continue;
         }
         if (typeof provider.urlTest === "function" && !provider.urlTest()) {
@@ -235,7 +246,10 @@
       urlTest: /51\.ruyo\.net/,
       linkTest: /\/[^\?]*\?u=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("u"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("u")
+        );
       },
     },
     {
@@ -251,7 +265,10 @@
       urlTest: /afdian\.net/,
       linkTest: /afdian\.net\/link\?target=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("target")
+        );
       },
     },
     {
@@ -268,13 +285,22 @@
                 e.stopPropagation();
               }
               element.setAttribute("target", "_blank");
-              window.top ? window.top.open(element.href) : window.open(element.href);
+              window.top
+                ? window.top.open(element.href)
+                : window.open(element.href);
             };
           }
         }
         // 分享页面
-        else if (/^https:\/\/app\.yinxiang\.com\/OutboundRedirect\.action\?dest=/.test(element.href)) {
-          removeLinkRedirect(element, new URL(element.href).searchParams.get("dest"));
+        else if (
+          /^https:\/\/app\.yinxiang\.com\/OutboundRedirect\.action\?dest=/.test(
+            element.href
+          )
+        ) {
+          removeLinkRedirect(
+            element,
+            new URL(element.href).searchParams.get("dest")
+          );
         }
       },
       onInit: async function () {
@@ -315,11 +341,11 @@
                     .split("&u=a1")[1]
                     .split("&ntb=1")[0]
                     .replace(/[-_]/g, (e) => ("-" === e ? "+" : "/"))
-                    .replace(/[^A-Za-z0-9\\+\\/]/g, ""),
-                ),
-              ).map((e) => e.charCodeAt(0)),
-            ),
-          ),
+                    .replace(/[^A-Za-z0-9\\+\\/]/g, "")
+                )
+              ).map((e) => e.charCodeAt(0))
+            )
+          )
         );
       },
     },
@@ -369,7 +395,10 @@
       urlTest: /daily\.zhihu\.com/,
       linkTest: /zhihu\.com\/\?target=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("target")
+        );
       },
     },
     {
@@ -377,7 +406,10 @@
       urlTest: /docs\.google\.com/,
       linkTest: /www\.google\.com\/url\?q=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("q"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("q")
+        );
       },
     },
     {
@@ -385,7 +417,10 @@
       urlTest: /getpocket\.com/,
       linkTest: /getpocket\.com\/redirect\?url=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("url"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("url")
+        );
       },
     },
     {
@@ -393,7 +428,10 @@
       urlTest: /gitee\.com/,
       linkTest: /gitee\.com\/link\?target=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("target")
+        );
       },
     },
     {
@@ -401,7 +439,10 @@
       urlTest: /infoq\.cn/,
       linkTest: /infoq\.cn\/link\?target=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("target")
+        );
       },
     },
     {
@@ -439,7 +480,10 @@
       urlTest: /oschina\.net/,
       linkTest: /oschina\.net\/action\/GoToLink\?url=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("url"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("url")
+        );
       },
     },
     {
@@ -454,7 +498,10 @@
         return false;
       },
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("q"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("q")
+        );
         // 移除开发者栏目下的重定向
         const eles = [].slice.call(document.querySelectorAll("a.hrTbp"));
         for (const ele of eles) {
@@ -468,7 +515,7 @@
             (event) => {
               event.stopPropagation();
             },
-            true,
+            true
           );
         }
       },
@@ -478,7 +525,10 @@
       urlTest: /sspai\.com/,
       linkTest: /sspai\.com\/link\?target=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("target")
+        );
       },
     },
     {
@@ -486,7 +536,10 @@
       urlTest: /steamcommunity\.com/,
       linkTest: /steamcommunity\.com\/linkfilter\/\?url=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("url"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("url")
+        );
       },
     },
     {
@@ -555,7 +608,12 @@
       urlTest: /\.weibo\.com/,
       linkTest: /t\.cn\/\w+/,
       resolve: function (element) {
-        if (!(this.linkTest.test(element.href) && /^https?:\/\//.test(element.title))) {
+        if (
+          !(
+            this.linkTest.test(element.href) &&
+            /^https?:\/\//.test(element.title)
+          )
+        ) {
           return;
         }
         const url = decodeURIComponent(element.title);
@@ -583,8 +641,15 @@
         }, 3);
       },
       resolve: async function (element) {
-        const url = element.closest(".cos-row") ? null : element.closest(".c-container")?.getAttribute("mu");
-        if (url && url !== "null" && url !== "undefined" && !this.unresolvable.some((u) => url.includes(u))) {
+        const url = element.closest(".cos-row")
+          ? null
+          : element.closest(".c-container")?.getAttribute("mu");
+        if (
+          url &&
+          url !== "null" &&
+          url !== "undefined" &&
+          !this.unresolvable.some((u) => url.includes(u))
+        ) {
           removeLinkRedirect(element, url);
         } else {
           this.handleOneElement(element);
@@ -601,7 +666,10 @@
       urlTest: /douban\.com/,
       linkTest: /douban\.com\/link2\/?\?url=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("url"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("url")
+        );
       },
     },
     {
@@ -645,7 +713,10 @@
       },
       resolve: function (element) {
         const search = new URL(element.href).searchParams;
-        removeLinkRedirect(element, search.get("to") || search.get("t") || search.get("url"));
+        removeLinkRedirect(
+          element,
+          search.get("to") || search.get("t") || search.get("url")
+        );
       },
     },
     {
@@ -653,7 +724,10 @@
       urlTest: /www\.logonews\.cn/,
       linkTest: /link\.logonews\.cn\/\?url=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("url"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("url")
+        );
       },
     },
     {
@@ -661,7 +735,9 @@
       urlTest: /www\.so\.com/,
       linkTest: /so\.com\/link\?(.*)/,
       resolve: function (element) {
-        const url = element.getAttribute("data-mdurl") || element.getAttribute("e-landurl");
+        const url =
+          element.getAttribute("data-mdurl") ||
+          element.getAttribute("e-landurl");
         if (url) {
           removeLinkRedirect(element, url);
         }
@@ -686,7 +762,10 @@
       urlTest: /www\.youtube\.com/,
       linkTest: /www\.youtube\.com\/redirect\?.{1,}/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("q"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("q")
+        );
       },
     },
     {
@@ -694,7 +773,10 @@
       urlTest: /www\.zhihu\.com/,
       linkTest: /zhihu\.com\/\?target=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("target")
+        );
       },
     },
     {
@@ -702,7 +784,8 @@
       urlTest: /xueshu\.baidu\.com/,
       linkTest: /xueshu\.baidu\.com\/s?\?(.*)/,
       resolve: function (element) {
-        const realHref = element.getAttribute("data-link") || element.getAttribute("data-url");
+        const realHref =
+          element.getAttribute("data-link") || element.getAttribute("data-url");
         if (realHref) {
           removeLinkRedirect(element, decodeURIComponent(realHref));
         }
@@ -713,7 +796,10 @@
       urlTest: /zhuanlan\.zhihu\.com/,
       linkTest: /link\.zhihu\.com\/\?target=(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, new URL(element.href).searchParams.get("target"));
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("target")
+        );
       },
     },
   ];
