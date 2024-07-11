@@ -69,6 +69,7 @@ const webpackConfig = {
 // @match             *://sspai.com/*
 // @match             *://*.bing.com/*
 // @connect           *
+// @icon              ${pkg.icon}
 // @supportURL        ${pkg.supportURL}
 // @homepage          ${pkg.homepage}
 // @run-at            document-start
