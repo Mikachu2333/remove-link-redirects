@@ -140,10 +140,12 @@ class App {
             if (providerConfig.test === false) {
                 continue;
             }
-            if (providerConfig.test instanceof RegExp && !providerConfig.test.test(location.hostname)) {
+            if (providerConfig.test instanceof RegExp &&
+                !providerConfig.test.test(location.hostname)) {
                 continue;
             }
-            if (typeof providerConfig.test === "function" && providerConfig.test() === false) {
+            if (typeof providerConfig.test === "function" &&
+                providerConfig.test() === false) {
                 continue;
             }
             const provider = new providerConfig.provider();
@@ -315,7 +317,9 @@ class YinXiangProvider {
                         e.stopPropagation();
                     }
                     aElement.setAttribute("target", "_blank");
-                    window.top ? window.top.open(aElement.href) : window.open(aElement.href);
+                    window.top
+                        ? window.top.open(aElement.href)
+                        : window.open(aElement.href);
                 };
             }
         }
@@ -718,8 +722,13 @@ class BaiduProvider {
     }
     async resolve(aElement) {
         var _a;
-        const url = aElement.closest(".cos-row") ? null : (_a = aElement.closest(".c-container")) === null || _a === void 0 ? void 0 : _a.getAttribute("mu");
-        if (url && url !== "null" && url !== "undefined" && !this.unresolvable.some((u) => url.includes(u))) {
+        const url = aElement.closest(".cos-row")
+            ? null
+            : (_a = aElement.closest(".c-container")) === null || _a === void 0 ? void 0 : _a.getAttribute("mu");
+        if (url &&
+            url !== "null" &&
+            url !== "undefined" &&
+            !this.unresolvable.some((u) => url.includes(u))) {
             (0, utils_1.removeLinkRedirect)(aElement, url);
         }
         else {
@@ -728,7 +737,10 @@ class BaiduProvider {
     }
     async onInit() {
         (0, utils_1.monitorUrlChange)((href) => {
-            location.href = href;
+            const url = new URL(href);
+            if (url.searchParams.has("wd")) {
+                location.href = href;
+            }
         });
         return;
     }

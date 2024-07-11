@@ -11,9 +11,11 @@ interface IProviderConfig {
 
 export class App {
   private providers: IProvider[] = [];
-  private mutationObserver: MutationObserver = new MutationObserver((mutations) => {
-    mutations.forEach(this.handleMutation.bind(this));
-  });
+  private mutationObserver: MutationObserver = new MutationObserver(
+    (mutations) => {
+      mutations.forEach(this.handleMutation.bind(this));
+    }
+  );
 
   /**
    * 处理变动
@@ -27,7 +29,9 @@ export class App {
           this.handleNode(node);
         } else {
           // @ts-ignore
-          const aNodes = node.querySelectorAll?.(`a:not([${Marker.RedirectStatusDone}])`);
+          const aNodes = node.querySelectorAll?.(
+            `a:not([${Marker.RedirectStatusDone}])`
+          );
           aNodes?.forEach((aNode: HTMLAnchorElement) => this.handleNode(aNode));
         }
       });
@@ -53,7 +57,10 @@ export class App {
    * @param aElement
    * @param provider
    */
-  private isMatchProvider(aElement: HTMLAnchorElement, provider: IProvider): boolean {
+  private isMatchProvider(
+    aElement: HTMLAnchorElement,
+    provider: IProvider
+  ): boolean {
     if (aElement.getAttribute(Marker.RedirectStatusDone)) {
       return false;
     }
@@ -89,10 +96,16 @@ export class App {
       if (providerConfig.test === false) {
         continue;
       }
-      if (providerConfig.test instanceof RegExp && !providerConfig.test.test(location.hostname)) {
+      if (
+        providerConfig.test instanceof RegExp &&
+        !providerConfig.test.test(location.hostname)
+      ) {
         continue;
       }
-      if (typeof providerConfig.test === "function" && providerConfig.test() === false) {
+      if (
+        typeof providerConfig.test === "function" &&
+        providerConfig.test() === false
+      ) {
         continue;
       }
       const provider = new providerConfig.provider();

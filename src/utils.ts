@@ -8,7 +8,10 @@ export enum Marker {
  * @param {RegExp} tester
  * @returns {boolean}
  */
-export function matchLinkFromUrl(aElement: HTMLAnchorElement, tester: RegExp): string {
+export function matchLinkFromUrl(
+  aElement: HTMLAnchorElement,
+  tester: RegExp
+): string {
   const match = tester.exec(aElement.href);
   if (!match || !match[1]) return "";
 
@@ -28,7 +31,7 @@ export function matchLinkFromUrl(aElement: HTMLAnchorElement, tester: RegExp): s
 export async function retryAsyncOperation<T>(
   operation: () => Promise<T>,
   maxRetries: number,
-  currentRetry = 0,
+  currentRetry = 0
 ): Promise<T> {
   try {
     // 尝试执行操作
@@ -57,7 +60,7 @@ interface IRemoveLinkRedirectOption {
 export function removeLinkRedirect(
   aElement: HTMLAnchorElement,
   realUrl: string,
-  options: IRemoveLinkRedirectOption = {},
+  options: IRemoveLinkRedirectOption = {}
 ) {
   if (options.force || (realUrl && aElement.href !== realUrl)) {
     aElement.setAttribute(Marker.RedirectStatusDone, "true");

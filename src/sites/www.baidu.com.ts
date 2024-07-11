@@ -1,5 +1,9 @@
 import { IProvider } from "@/provider";
-import { removeLinkRedirect, retryAsyncOperation, monitorUrlChange } from "@/utils";
+import {
+  removeLinkRedirect,
+  retryAsyncOperation,
+  monitorUrlChange,
+} from "@/utils";
 
 export class BaiduProvider implements IProvider {
   public test = /www\.baidu\.com\/link\?url=/;
@@ -20,9 +24,16 @@ export class BaiduProvider implements IProvider {
   }
 
   public async resolve(aElement: HTMLAnchorElement): Promise<void> {
-    const url = aElement.closest(".cos-row") ? null : aElement.closest(".c-container")?.getAttribute("mu");
+    const url = aElement.closest(".cos-row")
+      ? null
+      : aElement.closest(".c-container")?.getAttribute("mu");
 
-    if (url && url !== "null" && url !== "undefined" && !this.unresolvable.some((u) => url.includes(u))) {
+    if (
+      url &&
+      url !== "null" &&
+      url !== "undefined" &&
+      !this.unresolvable.some((u) => url.includes(u))
+    ) {
       removeLinkRedirect(aElement, url);
     } else {
       this.handleOneElement(aElement);
@@ -31,7 +42,10 @@ export class BaiduProvider implements IProvider {
 
   public async onInit(): Promise<this> {
     monitorUrlChange((href: string) => {
-      location.href = href;
+      const url = new URL(href);
+      if (url.searchParams.has("wd")) {
+        location.href = href;
+      }
     });
     return;
   }

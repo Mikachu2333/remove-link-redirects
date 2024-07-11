@@ -32,7 +32,7 @@ export class GooglePlayProvider implements IProvider {
         (event) => {
           event.stopPropagation();
         },
-        true,
+        true
       );
     }
   }

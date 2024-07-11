@@ -657,7 +657,10 @@
       },
       onInit: async function () {
         monitorUrlChange((href) => {
-          location.href = href;
+          const url = new URL(location.href);
+          if (url.searchParams.has("wd")) {
+            location.href = href;
+          }
         });
       },
     },
