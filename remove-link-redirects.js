@@ -2,12 +2,11 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.2.2
+// @version           2.2.3
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
-// @match             *://v.baidu.com/*
 // @match             *://xueshu.baidu.com/*
 // @include           *://www.google*
 // @match             *://www.google.com/*
@@ -185,27 +184,6 @@
       return decodeURIComponent(match[1]);
     } catch {
       return /https?:\/\//.test(match[1]) ? match[1] : "";
-    }
-  }
-
-  /**
-   * 重试异步操作
-   * @param {() => Promise<any>} operation
-   * @param {number} maxRetries
-   * @param {number} currentRetry
-   */
-  async function retryAsyncOperation(operation, maxRetries, currentRetry = 0) {
-    try {
-      // 尝试执行操作
-      return await operation();
-    } catch (err) {
-      if (currentRetry < maxRetries) {
-        // 如果当前重试次数小于最大重试次数，等待一段时间后重试
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // 等待1秒
-        return retryAsyncOperation(operation, maxRetries, currentRetry + 1);
-      }
-      // 如果重试次数用尽，抛出错误
-      throw err;
     }
   }
 
@@ -585,26 +563,6 @@
       },
     },
     {
-      name: "百度视频",
-      urlTest: /v\.baidu\.com/,
-      linkTest: /v\.baidu\.com\/link\?url=/,
-      resolve: function (element) {
-        GM.xmlHttpRequest({
-          method: "GET",
-          url: element.href,
-          anonymous: true,
-          onload: (res) => {
-            if (res.finalUrl) {
-              removeLinkRedirect(element, res.finalUrl);
-            }
-          },
-          onerror: (err) => {
-            console.error(err);
-          },
-        });
-      },
-    },
-    {
       name: "微博",
       urlTest: /\.weibo\.com/,
       linkTest: /t\.cn\/\w+/,
@@ -629,22 +587,27 @@
       urlTest: /www\.baidu\.com/,
       linkTest: /www\.baidu\.com\/link\?url=/,
       unresolvable: ["nourl.ubs.baidu.com", "lightapp.baidu.com"],
-      handleOneElement: (element) => {
-        retryAsyncOperation(async () => {
+      processedUrls: new Map(),
+      handleOneElement: async function (element) {
+        if (!this.processedUrls.has(element.href)) {
+          this.processedUrls.set(element.href, null);
           const res = await GM.xmlHttpRequest({
             method: "GET",
             url: element.href,
             anonymous: true,
           });
           if (res.finalUrl) {
+            this.processedUrls.set(element.href, res.finalUrl);
             removeLinkRedirect(element, res.finalUrl);
           }
-        }, 3);
+        } else {
+          removeLinkRedirect(element, this.processedUrls.get(element.href));
+        }
       },
       resolve: async function (element) {
         const url = element.closest(".cos-row")
           ? null
-          : element.closest(".c-container")?.getAttribute("mu");
+          : element.closest(".c-container[mu]")?.getAttribute("mu");
         if (
           url &&
           url !== "null" &&

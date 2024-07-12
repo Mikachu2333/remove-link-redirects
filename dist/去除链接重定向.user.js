@@ -2,12 +2,11 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.2.2
+// @version           2.2.3
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
-// @match             *://v.baidu.com/*
 // @match             *://xueshu.baidu.com/*
 // @include           *://www.google*
 // @match             *://www.google.com/*
@@ -176,7 +175,6 @@ exports.App = App;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Marker = void 0;
 exports.matchLinkFromUrl = matchLinkFromUrl;
-exports.retryAsyncOperation = retryAsyncOperation;
 exports.removeLinkRedirect = removeLinkRedirect;
 exports.monitorUrlChange = monitorUrlChange;
 var Marker;
@@ -198,27 +196,6 @@ function matchLinkFromUrl(aElement, tester) {
     }
     catch (_a) {
         return /https?:\/\//.test(match[1]) ? match[1] : "";
-    }
-}
-/**
- * 重试异步操作
- * @param {() => Promise<any>} operation
- * @param {number} maxRetries
- * @param {number} currentRetry
- */
-async function retryAsyncOperation(operation, maxRetries, currentRetry = 0) {
-    try {
-        // 尝试执行操作
-        return await operation();
-    }
-    catch (err) {
-        if (currentRetry < maxRetries) {
-            // 如果当前重试次数小于最大重试次数，等待一段时间后重试
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // 等待1秒
-            return retryAsyncOperation(operation, maxRetries, currentRetry + 1);
-        }
-        // 如果重试次数用尽，抛出错误
-        throw err;
     }
 }
 /**
@@ -645,37 +622,6 @@ exports.TwitterProvider = TwitterProvider;
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.BaiduVideoProvider = void 0;
-const utils_1 = __webpack_require__(2);
-class BaiduVideoProvider {
-    constructor() {
-        this.test = /v\.baidu\.com\/link\?url=/;
-    }
-    resolve(aElement) {
-        GM.xmlHttpRequest({
-            method: "GET",
-            url: aElement.href,
-            anonymous: true,
-            onload: (res) => {
-                if (res.finalUrl) {
-                    (0, utils_1.removeLinkRedirect)(aElement, res.finalUrl);
-                }
-            },
-            onerror: (err) => {
-                console.error(err);
-            },
-        });
-    }
-}
-exports.BaiduVideoProvider = BaiduVideoProvider;
-
-
-/***/ }),
-/* 18 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.WeboProvider = void 0;
 const utils_1 = __webpack_require__(2);
 class WeboProvider {
@@ -697,7 +643,7 @@ exports.WeboProvider = WeboProvider;
 
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -708,24 +654,30 @@ class BaiduProvider {
     constructor() {
         this.test = /www\.baidu\.com\/link\?url=/;
         this.unresolvable = ["nourl.ubs.baidu.com", "lightapp.baidu.com"];
+        this.processedUrls = new Map();
     }
-    handleOneElement(aElement) {
-        (0, utils_1.retryAsyncOperation)(async () => {
+    async handleOneElement(aElement) {
+        if (!this.processedUrls.has(aElement.href)) {
+            this.processedUrls.set(aElement.href, null);
             const res = await GM.xmlHttpRequest({
                 method: "GET",
                 url: aElement.href,
                 anonymous: true,
             });
             if (res.finalUrl) {
+                this.processedUrls.set(aElement.href, res.finalUrl);
                 (0, utils_1.removeLinkRedirect)(aElement, res.finalUrl);
             }
-        }, 3);
+        }
+        else {
+            (0, utils_1.removeLinkRedirect)(aElement, this.processedUrls.get(aElement.href));
+        }
     }
     async resolve(aElement) {
         var _a;
         const url = aElement.closest(".cos-row")
             ? null
-            : (_a = aElement.closest(".c-container")) === null || _a === void 0 ? void 0 : _a.getAttribute("mu");
+            : (_a = aElement.closest(".c-container[mu]")) === null || _a === void 0 ? void 0 : _a.getAttribute("mu");
         if (url &&
             url !== "null" &&
             url !== "undefined" &&
@@ -738,19 +690,19 @@ class BaiduProvider {
     }
     async onInit() {
         (0, utils_1.monitorUrlChange)((href) => {
-            const url = new URL(href);
+            const url = new URL(location.href);
             if (url.searchParams.has("wd")) {
                 location.href = href;
             }
         });
-        return;
+        return this;
     }
 }
 exports.BaiduProvider = BaiduProvider;
 
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -769,7 +721,7 @@ exports.DouBanProvider = DouBanProvider;
 
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -807,7 +759,7 @@ exports.GoogleProvider = GoogleProvider;
 
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -835,7 +787,7 @@ exports.JianShuProvider = JianShuProvider;
 
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -860,7 +812,7 @@ exports.SoProvider = SoProvider;
 
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -882,7 +834,7 @@ exports.SoGouProvider = SoGouProvider;
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -901,7 +853,7 @@ exports.YoutubeProvider = YoutubeProvider;
 
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -920,7 +872,7 @@ exports.ZhihuProvider = ZhihuProvider;
 
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -942,7 +894,7 @@ exports.BaiduXueshuProvider = BaiduXueshuProvider;
 
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -961,7 +913,7 @@ exports.ZhihuZhuanlanProvider = ZhihuZhuanlanProvider;
 
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -980,7 +932,7 @@ exports.LogonewsProvider = LogonewsProvider;
 
 
 /***/ }),
-/* 30 */
+/* 29 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -999,7 +951,7 @@ exports.AfDianNetProvider = AfDianNetProvider;
 
 
 /***/ }),
-/* 31 */
+/* 30 */
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -1031,7 +983,7 @@ exports.Blog51CTO = Blog51CTO;
 
 
 /***/ }),
-/* 32 */
+/* 31 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1050,7 +1002,7 @@ exports.InfoQProvider = InfoQProvider;
 
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1069,7 +1021,7 @@ exports.GiteeProvider = GiteeProvider;
 
 
 /***/ }),
-/* 34 */
+/* 33 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1088,7 +1040,7 @@ exports.SSPaiProvider = SSPaiProvider;
 
 
 /***/ }),
-/* 35 */
+/* 34 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1160,25 +1112,24 @@ const play_google_com_1 = __webpack_require__(13);
 const steamcommunity_com_1 = __webpack_require__(14);
 const tieba_baidu_com_1 = __webpack_require__(15);
 const twitter_com_1 = __webpack_require__(16);
-const video_baidu_com_1 = __webpack_require__(17);
-const weibo_com_1 = __webpack_require__(18);
-const www_baidu_com_1 = __webpack_require__(19);
-const www_douban_com_1 = __webpack_require__(20);
-const www_google_com_1 = __webpack_require__(21);
-const www_jianshu_com_1 = __webpack_require__(22);
-const www_so_com_1 = __webpack_require__(23);
-const www_sogou_com_1 = __webpack_require__(24);
-const www_youtube_com_1 = __webpack_require__(25);
-const www_zhihu_com_1 = __webpack_require__(26);
-const xueshu_baidu_com_1 = __webpack_require__(27);
-const zhuanlan_zhihu_com_1 = __webpack_require__(28);
-const www_logonews_cn_1 = __webpack_require__(29);
-const afadian_net_1 = __webpack_require__(30);
-const blog_51cto_com_1 = __webpack_require__(31);
-const infoq_cn_1 = __webpack_require__(32);
-const gitee_com_1 = __webpack_require__(33);
-const sspai_com_1 = __webpack_require__(34);
-const bing_com_1 = __webpack_require__(35);
+const weibo_com_1 = __webpack_require__(17);
+const www_baidu_com_1 = __webpack_require__(18);
+const www_douban_com_1 = __webpack_require__(19);
+const www_google_com_1 = __webpack_require__(20);
+const www_jianshu_com_1 = __webpack_require__(21);
+const www_so_com_1 = __webpack_require__(22);
+const www_sogou_com_1 = __webpack_require__(23);
+const www_youtube_com_1 = __webpack_require__(24);
+const www_zhihu_com_1 = __webpack_require__(25);
+const xueshu_baidu_com_1 = __webpack_require__(26);
+const zhuanlan_zhihu_com_1 = __webpack_require__(27);
+const www_logonews_cn_1 = __webpack_require__(28);
+const afadian_net_1 = __webpack_require__(29);
+const blog_51cto_com_1 = __webpack_require__(30);
+const infoq_cn_1 = __webpack_require__(31);
+const gitee_com_1 = __webpack_require__(32);
+const sspai_com_1 = __webpack_require__(33);
+const bing_com_1 = __webpack_require__(34);
 const providers = [
     {
         // 测试地址: https://www.zhihu.com/question/25258775
@@ -1249,12 +1200,6 @@ const providers = [
         name: "百度搜索",
         test: /www\.baidu\.com/,
         provider: www_baidu_com_1.BaiduProvider,
-    },
-    {
-        // 测试: https://www.baidu.com/s?wd=chrome&pn=20&oq=chrome&tn=baiduhome_pg&ie=utf-8&usm=3&rsv_idx=2&rsv_pq=e043900d0000752d&rsv_t=6bb0UqEwp2Tle6TAMBDlU3Wg%2BSxoqvvOhZKyQgM%2BVQP8Gc54QZLhcDcj62eGfNG75aq5&rsv_page=1
-        name: "百度视频",
-        test: /v\.baidu\.com/,
-        provider: video_baidu_com_1.BaiduVideoProvider,
     },
     {
         // 测试: http://xueshu.baidu.com/s?wd=paperuri%3A%28ae4d6b5da05eca552dab05aeefb966e6%29&ie=utf-8&filter=sc_long_sign&sc_ks_para=q%3D%E2%80%9C%E4%BA%92%E8%81%94%E7%BD%91%2B%E5%81%A5%E5%BA%B7%E7%AE%A1%E7%90%86%E2%80%9D%E6%A8%A1%E5%BC%8F%E6%8E%A2%E8%AE%A8%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8&tn=SE_baiduxueshu_c1gjeupa

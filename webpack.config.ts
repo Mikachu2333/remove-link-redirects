@@ -33,7 +33,6 @@ const webpackConfig = {
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
 // @match             *://tieba.baidu.com/*
-// @match             *://v.baidu.com/*
 // @match             *://xueshu.baidu.com/*
 // @include           *://www.google*
 // @match             *://www.google.com/*

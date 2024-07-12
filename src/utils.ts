@@ -22,31 +22,6 @@ export function matchLinkFromUrl(
   }
 }
 
-/**
- * 重试异步操作
- * @param {() => Promise<any>} operation
- * @param {number} maxRetries
- * @param {number} currentRetry
- */
-export async function retryAsyncOperation<T>(
-  operation: () => Promise<T>,
-  maxRetries: number,
-  currentRetry = 0
-): Promise<T> {
-  try {
-    // 尝试执行操作
-    return await operation();
-  } catch (err) {
-    if (currentRetry < maxRetries) {
-      // 如果当前重试次数小于最大重试次数，等待一段时间后重试
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // 等待1秒
-      return retryAsyncOperation(operation, maxRetries, currentRetry + 1);
-    }
-    // 如果重试次数用尽，抛出错误
-    throw err;
-  }
-}
-
 interface IRemoveLinkRedirectOption {
   force?: boolean;
 }
