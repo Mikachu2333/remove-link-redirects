@@ -218,8 +218,6 @@
         this.processedUrls.set(element.href, res.finalUrl);
         removeLinkRedirect(element, res.finalUrl);
       }
-      console.log("FallbackRemover: ", element.href);
-      console.log("ProcessedUrls: ", this.processedUrls.size);
     } else {
       removeLinkRedirect(element, this.processedUrls.get(element.href));
     }
