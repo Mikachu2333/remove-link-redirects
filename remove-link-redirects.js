@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.2.4
+// @version           2.2.6
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
@@ -203,6 +203,39 @@
     unsafeWindow.addEventListener("hashchange", urlChange);
   }
 
+  /**
+   * 用于通过后台请求的方式处理链接重定向
+   */
+  async function handleElementRedirect(element) {
+    if (!this.processedUrls.has(element.href)) {
+      this.processedUrls.set(element.href, void 0);
+      const res = await GM.xmlHttpRequest({
+        method: "GET",
+        url: element.href,
+        anonymous: true,
+      });
+      if (res.finalUrl) {
+        this.processedUrls.set(element.href, res.finalUrl);
+        removeLinkRedirect(element, res.finalUrl);
+      }
+      console.log("FallbackRemover: ", element.href);
+      console.log("ProcessedUrls: ", this.processedUrls.size);
+    } else {
+      removeLinkRedirect(element, this.processedUrls.get(element.href));
+    }
+  }
+
+  /**
+   * 兜底处理器，用于处理一些特殊情况
+   * 保证链接一定能被转化成最终的URL
+   */
+  function createFallbackRemover() {
+    return {
+      processedUrls: new Map(),
+      handleElementRedirect,
+    };
+  }
+
   const providers = [
     {
       name: "如有乐享",
@@ -219,17 +252,22 @@
       name: "Mozilla",
       urlTest: /addons\.mozilla\.org/,
       linkTest: /outgoing\.prod\.mozaws\.net\/v\d\/\w+\/(.*)/,
+      fallbackRemover: createFallbackRemover(),
       resolve: function (element) {
-        let url = element.href;
+        let url = void 0;
         const match = this.linkTest.exec(element.href);
         if (match && match[1]) {
           try {
             url = decodeURIComponent(match[1]);
           } catch {
-            url = /https?:\/\//.test(match[1]) ? match[1] : "";
+            url = /https?:\/\//.test(match[1]) ? match[1] : void 0;
           }
         }
-        removeLinkRedirect(element, url);
+        if (url) {
+          removeLinkRedirect(element, url);
+        } else {
+          this.fallbackRemover.handleElementRedirect(element);
+        }
       },
     },
     {
@@ -518,20 +556,23 @@
       name: "百度贴吧",
       urlTest: /tieba\.baidu\.com/,
       linkTest: /jump\d*\.bdimg\.com/,
+      fallbackRemover: createFallbackRemover(),
       resolve: function (element) {
         if (!this.test.test(element.href)) {
           return;
         }
-        let url = element.href;
-        const text = element.innerText || element.textContent || "";
+        let url = void 0;
+        const text = element.innerText || element.textContent || void 0;
         const isUrl = /https?:\/\//.test(text);
         try {
-          url = isUrl ? decodeURIComponent(text) : element.href;
+          if (isUrl) url = decodeURIComponent(text);
         } catch (e) {
-          url = isUrl ? text : element.href;
+          if (isUrl) url = text;
         }
         if (url) {
           removeLinkRedirect(element, url);
+        } else {
+          this.fallbackRemover.handleElementRedirect(element);
         }
       },
     },
@@ -559,6 +600,7 @@
       name: "微博",
       urlTest: /\.weibo\.com/,
       linkTest: /t\.cn\/\w+/,
+      fallbackRemover: createFallbackRemover(),
       resolve: function (element) {
         if (
           !(
@@ -568,10 +610,11 @@
         ) {
           return;
         }
-        const url = decodeURIComponent(element.title);
-        if (url) {
-          element.href = url;
+        try {
+          const url = decodeURIComponent(element.title);
           removeLinkRedirect(element, url);
+        } catch {
+          this.fallbackRemover.handleElementRedirect(element);
         }
       },
     },
@@ -580,26 +623,10 @@
       urlTest: /www\.baidu\.com/,
       linkTest: /www\.baidu\.com\/link\?url=/,
       unresolvable: ["nourl.ubs.baidu.com", "lightapp.baidu.com"],
-      processedUrls: new Map(),
-      handleOneElement: async function (element) {
-        if (!this.processedUrls.has(element.href)) {
-          this.processedUrls.set(element.href, null);
-          const res = await GM.xmlHttpRequest({
-            method: "GET",
-            url: element.href,
-            anonymous: true,
-          });
-          if (res.finalUrl) {
-            this.processedUrls.set(element.href, res.finalUrl);
-            removeLinkRedirect(element, res.finalUrl);
-          }
-        } else {
-          removeLinkRedirect(element, this.processedUrls.get(element.href));
-        }
-      },
+      fallbackRemover: createFallbackRemover(),
       resolve: async function (element) {
         const url = element.closest(".cos-row")
-          ? null
+          ? void 0
           : element.closest(".c-container[mu]")?.getAttribute("mu");
         if (
           url &&
@@ -609,7 +636,7 @@
         ) {
           removeLinkRedirect(element, url);
         } else {
-          this.handleOneElement(element);
+          this.fallbackRemover.handleElementRedirect(element);
         }
       },
       onInit: async function () {
@@ -743,11 +770,16 @@
       name: "百度学术",
       urlTest: /xueshu\.baidu\.com/,
       linkTest: /xueshu\.baidu\.com\/s?\?(.*)/,
+      fallbackRemover: createFallbackRemover(),
       resolve: function (element) {
         const realHref =
-          element.getAttribute("data-link") || element.getAttribute("data-url");
+          element.getAttribute("data-link") ||
+          element.getAttribute("data-url") ||
+          void 0;
         if (realHref) {
           removeLinkRedirect(element, decodeURIComponent(realHref));
+        } else {
+          this.fallbackRemover.handleElementRedirect(element);
         }
       },
     },

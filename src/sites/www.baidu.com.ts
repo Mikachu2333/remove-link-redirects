@@ -26,7 +26,7 @@ export class BaiduProvider implements IProvider {
   }
 
   public async resolve(aElement: HTMLAnchorElement): Promise<void> {
-    const url = aElement.closest(".cos-row")
+    const url = aElement.closest(".cos-row, .c-row")
       ? null
       : aElement.closest(".c-container[mu]")?.getAttribute("mu");
     if (
