@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.2.3
+// @version           2.2.4
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
@@ -172,22 +172,6 @@
   };
 
   /**
-   * 根据url上的路径匹配，去除重定向
-   * @param {HTMLAnchorElement} element
-   * @param {RegExp} tester
-   * @returns {boolean}
-   */
-  function matchLinkFromUrl(element, tester) {
-    const match = tester.exec(element.href);
-    if (!match || !match[1]) return "";
-    try {
-      return decodeURIComponent(match[1]);
-    } catch {
-      return /https?:\/\//.test(match[1]) ? match[1] : "";
-    }
-  }
-
-  /**
    * 去除重定向
    * @param element A标签元素
    * @param realUrl 真实的地址
@@ -236,7 +220,16 @@
       urlTest: /addons\.mozilla\.org/,
       linkTest: /outgoing\.prod\.mozaws\.net\/v\d\/\w+\/(.*)/,
       resolve: function (element) {
-        removeLinkRedirect(element, matchLinkFromUrl(element, this.linkTest));
+        let url = element.href;
+        const match = this.linkTest.exec(element.href);
+        if (match && match[1]) {
+          try {
+            url = decodeURIComponent(match[1]);
+          } catch {
+            url = /https?:\/\//.test(match[1]) ? match[1] : "";
+          }
+        }
+        removeLinkRedirect(element, url);
       },
     },
     {
@@ -283,7 +276,7 @@
         }
       },
       onInit: async function () {
-        const handler = (e) => {
+        const handler = function (e) {
           const dom = e.target;
           const tagName = dom.tagName.toUpperCase();
           switch (tagName) {
@@ -332,8 +325,8 @@
       name: "51CTO博客",
       urlTest: /blog\.51cto\.com/,
       linkTest: true,
+      container: document.querySelector(".article-detail"),
       resolve: function (element) {
-        this.container = document.querySelector(".article-detail");
         if (this.container?.contains(element)) {
           if (!element.onclick && element.href) {
             element.onclick = function removeLinkRedirectOnClickFn(e) {
@@ -353,8 +346,8 @@
       name: "CSDN",
       urlTest: /blog\.csdn\.net/,
       linkTest: /^https?:\/\//,
+      container: document.querySelector("#content_views"),
       resolve: function (element) {
-        this.container = document.querySelector("#content_views");
         if (this.container?.contains(element)) {
           if (!element.onclick && element.origin !== window.location.origin) {
             removeLinkRedirect(element, element.href, { force: true });
@@ -440,8 +433,8 @@
       name: "QQ邮箱",
       urlTest: /mail\.qq\.com/,
       linkTest: true,
+      container: document.querySelector("#contentDiv"),
       resolve: function (element) {
-        this.container = document.querySelector("#contentDiv");
         if (this.container?.contains(element)) {
           if (element.onclick) {
             element.onclick = (e) => {
@@ -719,7 +712,7 @@
       linkTest: /www\.sogou\.com\/link\?url=/,
       resolve: function (element) {
         const vrwrap = element.closest(".vrwrap");
-        const rSech = vrwrap.querySelector(".r-sech");
+        const rSech = vrwrap.querySelector(".r-sech[data-url]");
         const url = rSech.getAttribute("data-url");
         removeLinkRedirect(element, url);
       },
