@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.2.6
+// @version           2.2.7
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://www.baidu.com/*
@@ -623,7 +623,7 @@
       unresolvable: ["nourl.ubs.baidu.com", "lightapp.baidu.com"],
       fallbackRemover: createFallbackRemover(),
       resolve: async function (element) {
-        const url = element.closest(".cos-row")
+        const url = element.closest(".cos-row") || element.closest("[class*=catalog-list]")
           ? void 0
           : element.closest(".c-container[mu]")?.getAttribute("mu");
         if (
