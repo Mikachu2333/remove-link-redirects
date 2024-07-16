@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.3.1
+// @version           2.3.2
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://*/*
@@ -222,7 +222,7 @@
           try {
             url = decodeURIComponent(match[1]);
           } catch {
-            url = /https?:\/\//.test(match[1]) ? match[1] : void 0;
+            url = /(http|https)?:\/\//.test(match[1]) ? match[1] : void 0;
           }
         }
         if (url) {
@@ -246,7 +246,7 @@
     {
       name: "印象笔记",
       urlTest: /(www|app)\.yinxiang\.com/,
-      linkTest: /^http:\/\//,
+      linkTest: /^(http|https):\/\//,
       resolveRedirect: function (element) {
         if (
           element.href.test(
@@ -361,7 +361,7 @@
     {
       name: "CSDN",
       urlTest: /blog\.csdn\.net/,
-      linkTest: /^https?:\/\//,
+      linkTest: /^(http|https)?:\/\//,
       container: document.querySelector("#content_views"),
       resolveRedirect: function (element) {
         if (this.container?.contains(element)) {
@@ -547,7 +547,7 @@
         }
         let url = void 0;
         const text = element.innerText || element.textContent || void 0;
-        const isUrl = /https?:\/\//.test(text);
+        const isUrl = /(http|https)?:\/\//.test(text);
         try {
           if (isUrl) url = decodeURIComponent(text);
         } catch (e) {
@@ -568,13 +568,13 @@
         if (!this.linkTest.test(element.href)) {
           return;
         }
-        if (/https?:\/\//.test(element.title)) {
+        if (/(http|https)?:\/\//.test(element.title)) {
           const url = decodeURIComponent(element.title);
           removeLinkRedirect(element, url);
           return;
         }
         const innerText = element.innerText.replace(/…$/, "");
-        if (/https?:\/\//.test(innerText)) {
+        if (/(http|https)?:\/\//.test(innerText)) {
           removeLinkRedirect(element, innerText);
           return;
         }
@@ -589,7 +589,7 @@
         if (
           !(
             this.linkTest.test(element.href) &&
-            /^https?:\/\//.test(element.title)
+            /^(http|https)?:\/\//.test(element.title)
           )
         ) {
           return;
@@ -810,7 +810,7 @@
     },
     {
       name: "酷安",
-      urlTest: /^http:\/\//,
+      urlTest: /^(http|https):\/\//,
       linkTest: /www\.coolapk\.com\/link\?url=(.*)/,
       resolveRedirect: function (element) {
         removeLinkRedirect(
@@ -854,7 +854,7 @@
     },
     {
       name: "QQ",
-      urlTest: /^http:\/\//,
+      urlTest: /^(http|https):\/\//,
       linkTest: /c\.pc\.qq\.com.*\?pfurl=(.*)/,
       resolveRedirect: function (element) {
         removeLinkRedirect(
