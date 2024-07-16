@@ -2,49 +2,10 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.2.8
+// @version           2.2.9
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
-// @match             *://www.baidu.com/*
-// @match             *://tieba.baidu.com/*
-// @match             *://xueshu.baidu.com/*
-// @include           *://www.google*
-// @match             *://www.google.com/*
-// @match             *://docs.google.com/*
-// @match             *://mail.google.com/*
-// @match             *://play.google.com/*
-// @match             *://www.youtube.com/*
-// @match             *://encrypted.google.com/*
-// @match             *://www.so.com/*
-// @match             *://www.zhihu.com/*
-// @match             *://daily.zhihu.com/*
-// @match             *://zhuanlan.zhihu.com/*
-// @match             *://weibo.com/*
-// @match             *://twitter.com/*
-// @match             *://www.sogou.com/*
-// @match             *://juejin.im/*
-// @match             *://juejin.cn/*
-// @match             *://mail.qq.com/*
-// @match             *://addons.mozilla.org/*
-// @match             *://www.jianshu.com/*
-// @match             *://www.douban.com/*
-// @match             *://getpocket.com/*
-// @match             *://51.ruyo.net/*
-// @match             *://steamcommunity.com/*
-// @match             *://blog.csdn.net/*
-// @match             *://*.blog.csdn.net/*
-// @match             *://*.oschina.net/*
-// @match             *://app.yinxiang.com/*
-// @match             *://www.logonews.cn/*
-// @match             *://afdian.net/*
-// @match             *://blog.51cto.com/*
-// @match             *://xie.infoq.cn/*
-// @match             *://gitee.com/*
-// @match             *://sspai.com/*
-// @match             *://*.bing.com/*
-// @match             *://www.leetcode.com/*
-// @match             *://www.leetcode.cn/*
-// @match             *://cloud.tencent.com/*
+// @match             *://*/*
 // @connect           *
 // @icon              https://cdn-icons-png.flaticon.com/512/208/208895.png
 // @supportURL        https://github.com/MerielVaren/remove-link-redirects
@@ -91,7 +52,7 @@
     handleNode(node) {
       for (const provider of this.registeredProviders) {
         if (this.isMatchProvider(node, provider)) {
-          provider.resolve(node);
+          provider.resolveRedirect(node);
           break;
         }
       }
@@ -242,7 +203,7 @@
       name: "如有乐享",
       urlTest: /51\.ruyo\.net/,
       linkTest: /\/[^\?]*\?u=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("u")
@@ -254,7 +215,7 @@
       urlTest: /addons\.mozilla\.org/,
       linkTest: /outgoing\.prod\.mozaws\.net\/v\d\/\w+\/(.*)/,
       fallbackRemover: createFallbackRemover(),
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         let url = void 0;
         const match = this.linkTest.exec(element.href);
         if (match && match[1]) {
@@ -275,7 +236,7 @@
       name: "爱发电",
       urlTest: /afdian\.net/,
       linkTest: /afdian\.net\/link\?target=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("target")
@@ -284,9 +245,19 @@
     },
     {
       name: "印象笔记",
-      urlTest: /app\.yinxiang\.com/,
+      urlTest: /(www|app)\.yinxiang\.com/,
       linkTest: /^http:\/\//,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
+        if (
+          element.href.test(
+            /(www|app)\.yinxiang\.com\/OutboundRedirect\.action\?dest=(.*)/
+          )
+        ) {
+          removeLinkRedirect(
+            element,
+            new URL(element.href).searchParams.get("dest")
+          );
+        }
         if (element.hasAttribute("data-mce-href")) {
           if (!element.onclick) {
             removeLinkRedirect(element, element.href, { force: true });
@@ -320,7 +291,7 @@
           const tagName = dom.tagName.toUpperCase();
           switch (tagName) {
             case "A": {
-              this.resolve(dom);
+              this.resolveRedirect(dom);
               break;
             }
             case "IFRAME": {
@@ -341,7 +312,7 @@
       urlTest: /bing\.com/,
       linkTest: /.+\.bing\.com\/ck\/a\?.*&u=a1(.*)&ntb=1/,
       textDecoder: new TextDecoder("utf-8"),
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           this.textDecoder.decode(
@@ -365,7 +336,13 @@
       urlTest: /blog\.51cto\.com/,
       linkTest: true,
       container: document.querySelector(".article-detail"),
-      resolve: function (element) {
+      resolveRedirect: function (element) {
+        if (element.href.test(/blog\.51cto\.com\/.*transfer\?(.*)/)) {
+          removeLinkRedirect(
+            element,
+            new URL(element.href).searchParams.get("url")
+          );
+        }
         if (this.container?.contains(element)) {
           if (!element.onclick && element.href) {
             element.onclick = function removeLinkRedirectOnClickFn(e) {
@@ -386,7 +363,7 @@
       urlTest: /blog\.csdn\.net/,
       linkTest: /^https?:\/\//,
       container: document.querySelector("#content_views"),
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         if (this.container?.contains(element)) {
           if (!element.onclick && element.origin !== window.location.origin) {
             removeLinkRedirect(element, element.href, { force: true });
@@ -405,7 +382,7 @@
       name: "知乎日报",
       urlTest: /daily\.zhihu\.com/,
       linkTest: /zhihu\.com\/\?target=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("target")
@@ -416,7 +393,7 @@
       name: "Google Docs",
       urlTest: /docs\.google\.com/,
       linkTest: /www\.google\.com\/url\?q=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("q")
@@ -427,7 +404,7 @@
       name: "Pocket",
       urlTest: /getpocket\.com/,
       linkTest: /getpocket\.com\/redirect\?url=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("url")
@@ -438,7 +415,7 @@
       name: "Gitee",
       urlTest: /gitee\.com/,
       linkTest: /gitee\.com\/link\?target=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("target")
@@ -449,7 +426,7 @@
       name: "InfoQ",
       urlTest: /infoq\.cn/,
       linkTest: /infoq\.cn\/link\?target=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("target")
@@ -460,7 +437,7 @@
       name: "掘金",
       urlTest: /juejin\.(im|cn)/,
       linkTest: /link\.juejin\.(im|cn)\/\?target=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         const finalURL = new URL(element.href).searchParams.get("target");
         removeLinkRedirect(element, finalURL);
         if (this.linkTest.test(element.title)) {
@@ -473,7 +450,13 @@
       urlTest: /mail\.qq\.com/,
       linkTest: true,
       container: document.querySelector("#contentDiv"),
-      resolve: function (element) {
+      resolveRedirect: function (element) {
+        if (element.href.test(/mail\.qq\.com.+gourl=(.+).*/)) {
+          removeLinkRedirect(
+            element,
+            new URL(element.href).searchParams.get("gourl")
+          );
+        }
         if (this.container?.contains(element)) {
           if (element.onclick) {
             element.onclick = (e) => {
@@ -490,7 +473,7 @@
       name: "OS China",
       urlTest: /oschina\.net/,
       linkTest: /oschina\.net\/action\/GoToLink\?url=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("url")
@@ -508,7 +491,7 @@
         }
         return false;
       },
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("q")
@@ -535,7 +518,7 @@
       name: "少数派",
       urlTest: /sspai\.com/,
       linkTest: /sspai\.com\/link\?target=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("target")
@@ -546,7 +529,7 @@
       name: "Steam Community",
       urlTest: /steamcommunity\.com/,
       linkTest: /steamcommunity\.com\/linkfilter\/\?url=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("url")
@@ -558,7 +541,7 @@
       urlTest: /tieba\.baidu\.com/,
       linkTest: /jump\d*\.bdimg\.com/,
       fallbackRemover: createFallbackRemover(),
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         if (!this.test.test(element.href)) {
           return;
         }
@@ -581,7 +564,7 @@
       name: "Twitter",
       urlTest: /twitter\.com/,
       linkTest: /t\.co\/\w+/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         if (!this.linkTest.test(element.href)) {
           return;
         }
@@ -602,7 +585,7 @@
       urlTest: /\.weibo\.com/,
       linkTest: /t\.cn\/\w+/,
       fallbackRemover: createFallbackRemover(),
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         if (
           !(
             this.linkTest.test(element.href) &&
@@ -625,7 +608,7 @@
       linkTest: /www\.baidu\.com\/link\?url=/,
       unresolvable: ["nourl.ubs.baidu.com", "lightapp.baidu.com"],
       fallbackRemover: createFallbackRemover(),
-      resolve: async function (element) {
+      resolveRedirect: async function (element) {
         const url =
           element.closest(".cos-row") ||
           element.closest("[class*=catalog-list]")
@@ -655,7 +638,7 @@
       name: "豆瓣",
       urlTest: /douban\.com/,
       linkTest: /douban\.com\/link2\/?\?url=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("url")
@@ -666,7 +649,7 @@
       name: "Google搜索",
       urlTest: /\w+\.google\./,
       linkTest: true,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         const traceProperties = ["ping", "data-jsarwt", "data-usg", "data-ved"];
         // 移除追踪
         for (const property of traceProperties) {
@@ -701,7 +684,7 @@
         }
         return false;
       },
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         const search = new URL(element.href).searchParams;
         removeLinkRedirect(
           element,
@@ -713,7 +696,7 @@
       name: "标志情报局",
       urlTest: /www\.logonews\.cn/,
       linkTest: /link\.logonews\.cn\/\?url=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("url")
@@ -724,7 +707,7 @@
       name: "360搜索",
       urlTest: /www\.so\.com/,
       linkTest: /so\.com\/link\?(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         const url =
           element.getAttribute("data-mdurl") ||
           element.getAttribute("e-landurl");
@@ -740,7 +723,7 @@
       name: "搜狗搜索",
       urlTest: /www\.sogou\.com/,
       linkTest: /www\.sogou\.com\/link\?url=/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         const vrwrap = element.closest(".vrwrap");
         const rSech = vrwrap.querySelector(".r-sech[data-url]");
         const url = rSech.getAttribute("data-url");
@@ -751,7 +734,7 @@
       name: "Youtube",
       urlTest: /www\.youtube\.com/,
       linkTest: /www\.youtube\.com\/redirect\?.{1,}/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("q")
@@ -762,7 +745,7 @@
       name: "知乎",
       urlTest: /www\.zhihu\.com/,
       linkTest: /zhihu\.com\/\?target=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("target")
@@ -774,7 +757,7 @@
       urlTest: /xueshu\.baidu\.com/,
       linkTest: /xueshu\.baidu\.com\/s?\?(.*)/,
       fallbackRemover: createFallbackRemover(),
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         const realHref =
           element.getAttribute("data-link") ||
           element.getAttribute("data-url") ||
@@ -790,7 +773,7 @@
       name: "知乎专栏",
       urlTest: /zhuanlan\.zhihu\.com/,
       linkTest: /link\.zhihu\.com\/\?target=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("target")
@@ -801,7 +784,7 @@
       name: "力扣",
       urlTest: /leetcode\.(cn|com)/,
       linkTest: /leetcode\.(cn|com)\/link\?target=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("target")
@@ -813,10 +796,54 @@
       urlTest: /cloud\.tencent\.com/,
       linkTest:
         /cloud\.tencent\.com\/developer\/tools\/blog-entry\?target=(.*)/,
-      resolve: function (element) {
+      resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
           new URL(element.href).searchParams.get("target")
+        );
+      },
+    },
+    {
+      name: "酷安",
+      urlTest: /www\.coolapk\.com/,
+      linkTest: /www\.coolapk\.com\/link\?url=(.*)/,
+      resolveRedirect: function (element) {
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("url")
+        );
+      },
+    },
+    {
+      name: "腾讯兔小巢",
+      urlTest: /support\.qq\.com/,
+      linkTest: /support\.qq\.com\/.*link-jump\?jump=(.*)/,
+      resolveRedirect: function (element) {
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("jump")
+        );
+      },
+    },
+    {
+      name: "微信开放社区",
+      urlTest: /developers\.weixin\.qq\.com/,
+      linkTest: /developers\.weixin\.qq\.com\/.*href=(.*)/,
+      resolveRedirect: function (element) {
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("href")
+        );
+      },
+    },
+    {
+      name: "pc6下载站",
+      urlTest: /www\.pc6\.com/,
+      linkTest: /www\.pc6\.com\/.*\?gourl=(.*)/,
+      resolveRedirect: function (element) {
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("gourl")
         );
       },
     },
