@@ -869,7 +869,7 @@
     {
       name: "UrlShare",
       urlTest: true,
-      linkTest: /.+\.urlshare\.+\/.*url=(.*)/,
+      linkTest: /.+\.urlshare\..+\/.*url=(.*)/,
       resolveRedirect: function (element) {
         removeLinkRedirect(
           element,
