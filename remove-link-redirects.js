@@ -607,13 +607,18 @@
       urlTest: /www\.baidu\.com/,
       linkTest: /www\.baidu\.com\/link\?url=/,
       unresolvable: ["nourl.ubs.baidu.com", "lightapp.baidu.com"],
+      specialElements: [
+        ".cos-row",
+        "[class*=catalog-list]",
+        "[class*=group-content]",
+      ],
       fallbackRemover: createFallbackRemover(),
       resolveRedirect: async function (element) {
-        const url =
-          element.closest(".cos-row") ||
-          element.closest("[class*=catalog-list]")
-            ? void 0
-            : element.closest(".c-container[mu]")?.getAttribute("mu");
+        const url = this.specialElements.some((selector) =>
+          element.closest(selector)
+        )
+          ? void 0
+          : element.closest(".c-container[mu]")?.getAttribute("mu");
         if (
           url &&
           url !== "null" &&
