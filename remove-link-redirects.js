@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.3.9
+// @version           2.4.0
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://*/*
@@ -271,16 +271,6 @@
       urlTest: /(www|app)\.yinxiang\.com/,
       linkTest: true,
       resolveRedirect: function (element) {
-        if (
-          element.href.test(
-            /(www|app)\.yinxiang\.com\/OutboundRedirect\.action\?dest=(.*)/
-          )
-        ) {
-          removeLinkRedirect(
-            element,
-            new URL(element.href).searchParams.get("dest")
-          );
-        }
         if (element.hasAttribute("data-mce-href")) {
           if (!element.onclick) {
             removeLinkRedirect(element, element.href, { force: true });
@@ -331,6 +321,17 @@
       },
     },
     {
+      name: "印象笔记",
+      urlTest: /app\.yinxiang\.com/,
+      linkTest: /(www|app)\.yinxiang\.com\/OutboundRedirect\.action\?dest=(.*)/,
+      resolveRedirect: function (element) {
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("dest")
+        );
+      },
+    },
+    {
       name: "Bing",
       urlTest: /bing\.com/,
       linkTest: /.+\.bing\.com\/ck\/a\?.*&u=a1(.*)&ntb=1/,
@@ -359,12 +360,6 @@
       urlTest: /blog\.51cto\.com/,
       linkTest: true,
       resolveRedirect: function (element) {
-        if (element.href.test(/blog\.51cto\.com\/.*transfer\?(.*)/)) {
-          removeLinkRedirect(
-            element,
-            new URL(element.href).searchParams.get("url")
-          );
-        }
         const container = document.querySelector(".article-detail");
         if (container?.contains(element)) {
           if (!element.onclick && element.href) {
@@ -379,6 +374,17 @@
             };
           }
         }
+      },
+    },
+    {
+      name: "51CTO博客",
+      urlTest: /blog\.51cto\.com/,
+      linkTest: /blog\.51cto\.com\/.*transfer\?(.*)/,
+      resolveRedirect: function (element) {
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("url")
+        );
       },
     },
     {
@@ -473,12 +479,6 @@
       urlTest: /mail\.qq\.com/,
       linkTest: true,
       resolveRedirect: function (element) {
-        if (element.href.test(/mail\.qq\.com.+gourl=(.+).*/)) {
-          removeLinkRedirect(
-            element,
-            new URL(element.href).searchParams.get("gourl")
-          );
-        }
         const container = document.querySelector("#contentDiv");
         if (container?.contains(element)) {
           if (element.onclick) {
@@ -490,6 +490,17 @@
             };
           }
         }
+      },
+    },
+    {
+      name: "QQ邮箱",
+      urlTest: /mail\.qq\.com/,
+      linkTest: /mail\.qq\.com.+gourl=(.+).*/,
+      resolveRedirect: function (element) {
+        removeLinkRedirect(
+          element,
+          new URL(element.href).searchParams.get("gourl")
+        );
       },
     },
     {
@@ -519,7 +530,6 @@
           element,
           new URL(element.href).searchParams.get("q")
         );
-        // 移除开发者栏目下的重定向
         const eles = [].slice.call(document.querySelectorAll("a.hrTbp"));
         for (const ele of eles) {
           if (!ele.href || ele.getAttribute(Marker.RedirectStatusDone)) {
@@ -565,9 +575,6 @@
       linkTest: /jump\d*\.bdimg\.com/,
       fallbackRemover: createFallbackRemover(),
       resolveRedirect: function (element) {
-        if (!this.test.test(element.href)) {
-          return;
-        }
         let url = void 0;
         const text = element.innerText || element.textContent || void 0;
         const isUrl = /(http|https)?:\/\//.test(text);
@@ -588,9 +595,6 @@
       urlTest: /twitter\.com/,
       linkTest: /t\.co\/\w+/,
       resolveRedirect: function (element) {
-        if (!this.linkTest.test(element.href)) {
-          return;
-        }
         if (/(http|https)?:\/\//.test(element.title)) {
           const url = decodeURIComponent(element.title);
           removeLinkRedirect(element, url);
@@ -609,12 +613,7 @@
       linkTest: /t\.cn\/\w+/,
       fallbackRemover: createFallbackRemover(),
       resolveRedirect: function (element) {
-        if (
-          !(
-            this.linkTest.test(element.href) &&
-            /^(http|https)?:\/\//.test(element.title)
-          )
-        ) {
+        if (!/^(http|https)?:\/\//.test(element.title)) {
           return;
         }
         try {
