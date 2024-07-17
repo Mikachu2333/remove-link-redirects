@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.3.7
+// @version           2.3.8
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://*/*
@@ -358,7 +358,6 @@
       name: "51CTO博客",
       urlTest: /blog\.51cto\.com/,
       linkTest: true,
-      container: document.querySelector(".article-detail"),
       resolveRedirect: function (element) {
         if (element.href.test(/blog\.51cto\.com\/.*transfer\?(.*)/)) {
           removeLinkRedirect(
@@ -366,7 +365,8 @@
             new URL(element.href).searchParams.get("url")
           );
         }
-        if (this.container?.contains(element)) {
+        const container = document.querySelector(".article-detail");
+        if (container?.contains(element)) {
           if (!element.onclick && element.href) {
             element.onclick = function removeLinkRedirectOnClickFn(e) {
               e.stopPropagation();
@@ -385,9 +385,9 @@
       name: "CSDN",
       urlTest: /blog\.csdn\.net/,
       linkTest: true,
-      container: document.querySelector("#content_views"),
       resolveRedirect: function (element) {
-        if (this.container?.contains(element)) {
+        const container = document.querySelector("#content_views");
+        if (container?.contains(element)) {
           if (!element.onclick && element.origin !== window.location.origin) {
             removeLinkRedirect(element, element.href, { force: true });
             element.onclick = (e) => {
@@ -472,7 +472,6 @@
       name: "QQ邮箱",
       urlTest: /mail\.qq\.com/,
       linkTest: true,
-      container: document.querySelector("#contentDiv"),
       resolveRedirect: function (element) {
         if (element.href.test(/mail\.qq\.com.+gourl=(.+).*/)) {
           removeLinkRedirect(
@@ -480,7 +479,8 @@
             new URL(element.href).searchParams.get("gourl")
           );
         }
-        if (this.container?.contains(element)) {
+        const container = document.querySelector("#contentDiv");
+        if (container?.contains(element)) {
           if (element.onclick) {
             element.onclick = (e) => {
               // 阻止事件冒泡, 因为上层元素绑定的click事件会重定向
