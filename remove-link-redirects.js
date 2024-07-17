@@ -626,7 +626,7 @@
       },
     },
     {
-      name: "微博2",
+      name: "微博",
       urlTest: /weibo\.(com|cn)/,
       linkTest: /weibo\.(com|cn)\/sinaurl\?u=(.*)/,
       resolveRedirect: function (element) {
