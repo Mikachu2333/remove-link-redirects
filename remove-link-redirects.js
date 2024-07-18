@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.4.0
+// @version           2.4.1
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://*/*
@@ -165,9 +165,14 @@
    * @param options
    */
   function removeLinkRedirect(element, realUrl, options = {}) {
+    element.setAttribute(Marker.RedirectStatusDone, "true");
     if (options.force || (realUrl && element.href !== realUrl)) {
-      element.setAttribute(Marker.RedirectStatusDone, "true");
       element.href = realUrl;
+    } else {
+      if (!this.fallbackResolver) {
+        this.fallbackResolver = createFallbackResolver();
+      }
+      this.fallbackResolver.resolveRedirect(element);
     }
   }
 
@@ -193,7 +198,7 @@
   /**
    * 用于通过后台请求的方式处理链接重定向
    */
-  async function handleElementRedirect(element) {
+  async function resolveRedirect(element) {
     if (!this.processedUrls.has(element.href)) {
       this.processedUrls.set(element.href, void 0);
       const res = await GM.xmlHttpRequest({
@@ -203,10 +208,11 @@
       });
       if (res.finalUrl) {
         this.processedUrls.set(element.href, res.finalUrl);
-        removeLinkRedirect(element, res.finalUrl);
+        element.href = res.finalUrl;
       }
     } else {
-      removeLinkRedirect(element, this.processedUrls.get(element.href));
+      // removeLinkRedirect(element, this.processedUrls.get(element.href));
+      element.href = this.processedUrls.get(element.href);
     }
   }
 
@@ -214,10 +220,10 @@
    * 兜底处理器，用于处理一些特殊情况
    * 保证链接一定能被转化成最终的URL
    */
-  function createFallbackRemover() {
+  function createFallbackResolver() {
     return {
       processedUrls: new Map(),
-      handleElementRedirect,
+      resolveRedirect,
     };
   }
 
@@ -237,22 +243,17 @@
       name: "Mozilla",
       urlTest: /addons\.mozilla\.org/,
       linkTest: /outgoing\.prod\.mozaws\.net\/v\d\/\w+\/(.*)/,
-      fallbackRemover: createFallbackRemover(),
       resolveRedirect: function (element) {
         let url = void 0;
         const match = this.linkTest.exec(element.href);
         if (match && match[1]) {
           try {
             url = decodeURIComponent(match[1]);
-          } catch {
+          } catch (_) {
             url = /(http|https)?:\/\//.test(match[1]) ? match[1] : void 0;
           }
         }
-        if (url) {
-          removeLinkRedirect(element, url);
-        } else {
-          this.fallbackRemover.handleElementRedirect(element);
-        }
+        removeLinkRedirect(element, url);
       },
     },
     {
@@ -274,11 +275,9 @@
         if (element.hasAttribute("data-mce-href")) {
           if (!element.onclick) {
             removeLinkRedirect(element, element.href, { force: true });
-            element.onclick = (e) => {
+            element.onclick = function (e) {
               // 阻止事件冒泡, 因为上层元素绑定的click事件会重定向
-              if (e.stopPropagation) {
-                e.stopPropagation();
-              }
+              e.stopPropagation?.();
               element.setAttribute("target", "_blank");
               window.top
                 ? window.top.open(element.href)
@@ -363,7 +362,7 @@
         const container = document.querySelector(".article-detail");
         if (container?.contains(element)) {
           if (!element.onclick && element.href) {
-            element.onclick = function removeLinkRedirectOnClickFn(e) {
+            element.onclick = function (e) {
               e.stopPropagation();
               e.preventDefault();
               e.stopImmediatePropagation();
@@ -396,11 +395,9 @@
         if (container?.contains(element)) {
           if (!element.onclick && element.origin !== window.location.origin) {
             removeLinkRedirect(element, element.href, { force: true });
-            element.onclick = (e) => {
+            element.onclick = function (e) {
               // 阻止事件冒泡, 因为上层元素绑定的click事件会重定向
-              if (e.stopPropagation) {
-                e.stopPropagation();
-              }
+              e.stopPropagation?.();
               element.setAttribute("target", "_blank");
             };
           }
@@ -481,12 +478,10 @@
       resolveRedirect: function (element) {
         const container = document.querySelector("#contentDiv");
         if (container?.contains(element)) {
-          if (element.onclick) {
-            element.onclick = (e) => {
+          if (!element.onclick) {
+            element.onclick = function (e) {
               // 阻止事件冒泡, 因为上层元素绑定的click事件会重定向
-              if (e.stopPropagation) {
-                e.stopPropagation();
-              }
+              e.stopPropagation?.();
             };
           }
         }
@@ -573,7 +568,6 @@
       name: "百度贴吧",
       urlTest: /tieba\.baidu\.com/,
       linkTest: /jump\d*\.bdimg\.com/,
-      fallbackRemover: createFallbackRemover(),
       resolveRedirect: function (element) {
         let url = void 0;
         const text = element.innerText || element.textContent || void 0;
@@ -583,11 +577,7 @@
         } catch (e) {
           if (isUrl) url = text;
         }
-        if (url) {
-          removeLinkRedirect(element, url);
-        } else {
-          this.fallbackRemover.handleElementRedirect(element);
-        }
+        removeLinkRedirect(element, url);
       },
     },
     {
@@ -611,17 +601,15 @@
       name: "微博",
       urlTest: /\.weibo\.(com|cn)/,
       linkTest: /t\.cn\/\w+/,
-      fallbackRemover: createFallbackRemover(),
       resolveRedirect: function (element) {
         if (!/^(http|https)?:\/\//.test(element.title)) {
           return;
         }
+        let url = void 0;
         try {
-          const url = decodeURIComponent(element.title);
-          removeLinkRedirect(element, url);
-        } catch {
-          this.fallbackRemover.handleElementRedirect(element);
-        }
+          url = decodeURIComponent(element.title);
+        } catch (_) {}
+        removeLinkRedirect(element, url);
       },
     },
     {
@@ -639,13 +627,13 @@
       name: "百度搜索",
       urlTest: /www\.baidu\.com/,
       linkTest: /www\.baidu\.com\/link\?url=/,
-      unresolvable: ["nourl.ubs.baidu.com", "lightapp.baidu.com"],
+      unresolvableWebsites: ["nourl.ubs.baidu.com", "lightapp.baidu.com"],
       specialElements: [
         ".cos-row",
         "[class*=catalog-list]",
         "[class*=group-content]",
       ],
-      fallbackRemover: createFallbackRemover(),
+      fallbackResolver: createFallbackResolver(),
       resolveRedirect: async function (element) {
         const url = this.specialElements.some((selector) =>
           element.closest(selector)
@@ -656,11 +644,11 @@
           url &&
           url !== "null" &&
           url !== "undefined" &&
-          !this.unresolvable.some((u) => url.includes(u))
+          !this.unresolvableWebsites.some((u) => url.includes(u))
         ) {
           removeLinkRedirect(element, url);
         } else {
-          this.fallbackRemover.handleElementRedirect(element);
+          this.fallbackResolver.resolveRedirect(element);
         }
       },
       onInit: async function () {
@@ -794,17 +782,12 @@
       name: "百度学术",
       urlTest: /xueshu\.baidu\.com/,
       linkTest: /xueshu\.baidu\.com\/s?\?(.*)/,
-      fallbackRemover: createFallbackRemover(),
       resolveRedirect: function (element) {
-        const realHref =
+        const url =
           element.getAttribute("data-link") ||
           element.getAttribute("data-url") ||
           void 0;
-        if (realHref) {
-          removeLinkRedirect(element, decodeURIComponent(realHref));
-        } else {
-          this.fallbackRemover.handleElementRedirect(element);
-        }
+        removeLinkRedirect(element, decodeURIComponent(url));
       },
     },
     {
