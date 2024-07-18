@@ -159,10 +159,43 @@
   };
 
   /**
+   * 用于通过后台请求的方式处理链接重定向
+   * this指向provider对象的fallbackResolver属性对象
+   */
+  async function resolveRedirect(element) {
+    if (!this.processedUrls.has(element.href)) {
+      this.processedUrls.set(element.href, void 0);
+      const res = await GM.xmlHttpRequest({
+        method: "GET",
+        url: element.href,
+        anonymous: true,
+      });
+      if (res.finalUrl) {
+        this.processedUrls.set(element.href, res.finalUrl);
+        element.href = res.finalUrl;
+      }
+    } else {
+      element.href = this.processedUrls.get(element.href);
+    }
+  }
+
+  /**
+   * 兜底处理器，用于处理一些特殊情况
+   * 保证链接一定能被转化成最终的URL
+   */
+  function createFallbackResolver() {
+    return {
+      processedUrls: new Map(),
+      resolveRedirect,
+    };
+  }
+
+  /**
    * 去除重定向
+   * this指向provider对象
    * @param element A标签元素
    * @param realUrl 真实的地址
-   * @param options
+   * @param options 配置项
    */
   function removeLinkRedirect(element, realUrl, options = {}) {
     element.setAttribute(Marker.RedirectStatusDone, "true");
@@ -193,38 +226,6 @@
     unsafeWindow.addEventListener("pushState", urlChange);
     unsafeWindow.addEventListener("popState", urlChange);
     unsafeWindow.addEventListener("hashchange", urlChange);
-  }
-
-  /**
-   * 用于通过后台请求的方式处理链接重定向
-   */
-  async function resolveRedirect(element) {
-    if (!this.processedUrls.has(element.href)) {
-      this.processedUrls.set(element.href, void 0);
-      const res = await GM.xmlHttpRequest({
-        method: "GET",
-        url: element.href,
-        anonymous: true,
-      });
-      if (res.finalUrl) {
-        this.processedUrls.set(element.href, res.finalUrl);
-        element.href = res.finalUrl;
-      }
-    } else {
-      // removeLinkRedirect(element, this.processedUrls.get(element.href));
-      element.href = this.processedUrls.get(element.href);
-    }
-  }
-
-  /**
-   * 兜底处理器，用于处理一些特殊情况
-   * 保证链接一定能被转化成最终的URL
-   */
-  function createFallbackResolver() {
-    return {
-      processedUrls: new Map(),
-      resolveRedirect,
-    };
   }
 
   const providers = [
@@ -284,17 +285,6 @@
                 : window.open(element.href);
             };
           }
-        }
-        // 分享页面
-        else if (
-          /^https:\/\/app\.yinxiang\.com\/OutboundRedirect\.action\?dest=/.test(
-            element.href
-          )
-        ) {
-          removeLinkRedirect(
-            element,
-            new URL(element.href).searchParams.get("dest")
-          );
         }
       },
       onInit: async function () {
@@ -574,7 +564,7 @@
         const isUrl = /(http|https)?:\/\//.test(text);
         try {
           if (isUrl) url = decodeURIComponent(text);
-        } catch (e) {
+        } catch (_) {
           if (isUrl) url = text;
         }
         removeLinkRedirect(element, url);
