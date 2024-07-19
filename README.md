@@ -95,6 +95,11 @@
 对于有编程经验的用户，可以自定义自己的provider并使用  
   
 插件中有两个类，AutoJumpApp负责处理自动跳转的情况，RedirectApp负责处理原地替换重定向链接的情况，这两个类里面都有providers这个数组，用户可以在这个数组里面添加对应的provider  
+
+两者的区别是（以下是一个示例）  
+<strong>AutoJumpApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> 用户点开了一个[重定向链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> 进入了[跳转页面](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> AutoJumpApp检测到跳转页面的链接帮你自动跳转 -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)</strong>  
+<strong>RedirectApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> RedirectApp检测到所有的这些链接 [比如这个链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows),然后直接在当前网页里把这些链接替换成了原来的链接 [比如这个原链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户点开了[某个链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)</strong>  
+可以看到，RedirectApp的方案是“做在前面”，AutoJumpApp的方案是“马后炮”，因此能用RedirectApp的情况建议优先用RedirectApp
   
 当RedirectApp比较难处理（比如CSDN博客上的外链，但是一般RedirectApp不能处理的情况很少）或是用户不太理解RedirectApp作用方式的时候可以自定义AutoJumpApp的provider，这个provider的定义简单且直接，其结构为
 ```
