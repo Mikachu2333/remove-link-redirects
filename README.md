@@ -103,8 +103,16 @@
   urlTest: RegExp
 }
 ```
-其中name为用户自己取的名字，urlTest为跳转链接的url，如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，需要用户将target=后面对应的最终链接的部分写成```(.*)```，比如```urlTest: /link\.csdn\.net\/\?target=(.*)/```
+其中name为用户自己取的名字，urlTest为跳转链接的url，如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，需要用户将target=后面对应的最终链接的部分写成```(.*)```，比如```urlTest: /link\.csdn\.net\/\?target=(.*)/```  
   
+举个例子  
+```
+{
+  name: "CSDN",
+  urlTest: /link\.csdn\.net\/\?target=(.*)/,
+},
+```
+其中CSDN是我给这个provider起的名字，```urlTest: /link\.csdn\.net\/\?target=(.*)/,```表示这个形式的网页是跳转网页，比如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，当然你也可以写成```/https\:\/\/link\.csdn\.net\/\?target=(.*)```，只要不要忘记转义就可以了，如果你不知道转义的意思，也可以简单的理解为<strong>在.*+?/这五个字符前面加上\，变成\\\. \\\* \\\+ \\\? \\\/</strong>
 
 RedirectApp处理的是原地替换链接的情况，当用户可以获取到重定向链接时可以自定义RedirectApp的provider，其基础结构为
 ```
