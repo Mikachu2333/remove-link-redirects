@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。
-// @version           2.4.4
+// @version           2.4.5
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://*/*
@@ -52,9 +52,7 @@
      * */
     bootstrap() {
       if (this.registeredProvider) {
-        location.href = decodeURIComponent(
-          this.registeredProvider.urlTest.exec(location.href)[1]
-        );
+        this.registeredProvider.resolveAutoJump();
         return true;
       }
       return false;
@@ -64,42 +62,92 @@
       {
         name: "CSDN",
         urlTest: /link\.csdn\.net\/\?target=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            this.urlTest.exec(location.href)[1]
+          );
+        },
       },
       {
         name: "腾讯兔小巢",
         urlTest: /support\.qq\.com\/.*link-jump\?jump=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            this.urlTest.exec(location.href)[1]
+          );
+        },
       },
       {
         name: "QQ邮箱",
         urlTest: /mail\.qq\.com\/.*gourl=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            this.urlTest.exec(location.href)[1]
+          );
+        },
       },
       {
         name: "印象笔记",
         urlTest: /app\.yinxiang\.com\/OutboundRedirect\.action\?dest=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            this.urlTest.exec(location.href)[1]
+          );
+        },
       },
       {
         name: "Youtube",
         urlTest: /www\.youtube\.com\/redirect\?q=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            this.urlTest.exec(location.href)[1]
+          );
+        },
       },
       {
         name: "微信开放社区",
         urlTest: /developers\.weixin\.qq\.com\/.*href=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            this.urlTest.exec(location.href)[1]
+          );
+        },
       },
       {
         name: "pc6下载站",
         urlTest: /www\.pc6\.com\/.*gourl=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            this.urlTest.exec(location.href)[1]
+          );
+        },
       },
       {
         name: "51CTO博客",
         urlTest: /blog\.51cto\.com\/transfer\?(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            this.urlTest.exec(location.href)[1]
+          );
+        },
       },
       {
         name: "QQ",
         urlTest: /c\.pc\.qq\.com.*\?pfurl=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            this.urlTest.exec(location.href)[1]
+          );
+        },
       },
       {
         name: "UrlShare",
         urlTest: /.+\.urlshare\..+\/.*url=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            this.urlTest.exec(location.href)[1]
+          );
+        },
       },
     ];
   }
@@ -1034,6 +1082,24 @@
             decodeURIComponent(new URL(element.href).searchParams.get("url")),
             this
           );
+        },
+      },
+      {
+        name: "PHP中文网",
+        urlTest: /www\.php\.cn/,
+        linkTest: /www\.php\.cn\/link(.*)/,
+        resolveRedirect: async function (element) {
+          const res = await GM.xmlHttpRequest({
+            method: "GET",
+            url: element.href,
+            anonymous: true,
+          });
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(res.responseText, "text/html");
+          const a = doc.querySelector("a");
+          if (a) {
+            RedirectApp.removeLinkRedirect(element, a.href, this);
+          }
         },
       },
     ];
