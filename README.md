@@ -106,7 +106,8 @@
 ```
 {
   name: string,
-  urlTest: RegExp
+  urlTest: RegExp，
+  resolveAutoJump  : Function
 }
 ```
 其中name为用户自己取的名字，urlTest为跳转链接的url，如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，需要用户将target=后面对应的最终链接的部分写成```(.*)```，比如```urlTest: /link\.csdn\.net\/\?target=(.*)/```  
@@ -116,9 +117,23 @@
 {
   name: "CSDN",
   urlTest: /link\.csdn\.net\/\?target=(.*)/,
+  resolveAutoJump: function () {
+    location.href = decodeURIComponent(
+      this.urlTest.exec(location.href)[1]
+    );
+  },
 },
 ```
-其中CSDN是我给这个provider起的名字，这个名字是任意的，```urlTest: /link\.csdn\.net\/\?target=(.*)/,```表示这个形式的网页是跳转网页，比如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，当然你也可以写成```/https:\/\/link\.csdn\.net\/\?target=(.*)```，只要不要忘记转义就可以了，如果你不知道转义的意思，也可以简单的理解为 <strong>在. * + ? / ( ) [ ] { }这些字符前面加上\，变成\\. \\* \\+ \\? \\/ \\( \\) \\[ \\] \\{ \\}的形式</strong>
+其中CSDN是我给这个provider起的名字，这个名字是任意的，```urlTest: /link\.csdn\.net\/\?target=(.*)/,```表示这个形式的网页是跳转网页，比如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，当然你也可以写成```/https:\/\/link\.csdn\.net\/\?target=(.*)```，只要不要忘记转义就可以了，如果你不知道转义的意思，也可以简单的理解为 <strong>在. * + ? / ( ) [ ] { }这些字符前面加上\，变成\\. \\* \\+ \\? \\/ \\( \\) \\[ \\] \\{ \\}的形式</strong>  
+
+```
+resolveAutoJump: function () {
+  location.href = decodeURIComponent(
+    this.urlTest.exec(location.href)[1]
+  );
+},
+```
+resolveAutoJump表示处理跳转链接的方式，上面例子的处理方式就是从urlTest里面取出对应的最终网页的链接并且赋值给location.href  
 
 RedirectApp处理的是原地替换链接的情况，当用户可以获取到重定向链接时可以自定义RedirectApp的provider，其基础结构为
 ```
