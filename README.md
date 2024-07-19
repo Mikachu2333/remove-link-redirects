@@ -105,14 +105,14 @@
 ```
 其中name为用户自己取的名字，urlTest为跳转链接的url，如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，需要用户将target=后面对应的最终链接的部分写成```(.*)```，比如```urlTest: /link\.csdn\.net\/\?target=(.*)/```  
   
-举个例子  
+<strong>举个例子</strong> 
 ```
 {
   name: "CSDN",
   urlTest: /link\.csdn\.net\/\?target=(.*)/,
 },
 ```
-其中CSDN是我给这个provider起的名字，```urlTest: /link\.csdn\.net\/\?target=(.*)/,```表示这个形式的网页是跳转网页，比如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，当然你也可以写成```/https\:\/\/link\.csdn\.net\/\?target=(.*)```，只要不要忘记转义就可以了，如果你不知道转义的意思，也可以简单的理解为<strong>在.*+?/这五个字符前面加上\，变成\\\. \\\* \\\+ \\\? \\\/</strong>
+其中CSDN是我给这个provider起的名字，这个名字是任意的，```urlTest: /link\.csdn\.net\/\?target=(.*)/,```表示这个形式的网页是跳转网页，比如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，当然你也可以写成```/https\:\/\/link\.csdn\.net\/\?target=(.*)```，只要不要忘记转义就可以了，如果你不知道转义的意思，也可以简单的理解为 <strong>在. * + ? / ( ) [ ] { }这些字符前面加上\，变成\\. \\* \\+ \\? \\/ \\( \\) \\[ \\] \\{ \\}的形式</strong>
 
 RedirectApp处理的是原地替换链接的情况，当用户可以获取到重定向链接时可以自定义RedirectApp的provider，其基础结构为
 ```
@@ -125,7 +125,7 @@ RedirectApp处理的是原地替换链接的情况，当用户可以获取到重
 ```
 其中name为用户自己取的名字，urlTest为一个返回布尔值的属性，表示“是否要在当前域名上启用”，linkTest为一个返回布尔值的属性，表示“什么样的链接要在当前网页上被替换”，resolveRedirect内部会调用RedirectApp.removeLinkRedirect(element, realUrl, this)，其中element和this是固定值不需要改，realUrl表示“要被替换的链接最终的形式是什么”  
 
-举个例子
+<strong>举个例子</strong>
 ```
 {
   name: "知乎专栏",
@@ -140,7 +140,7 @@ RedirectApp处理的是原地替换链接的情况，当用户可以获取到重
   },
 },
 ```
-这里“知乎专栏”是我给provider起的名字，```urlTest: /zhuanlan\.zhihu\.com/,```表示我要在zhuanlan.zhihu.com上启用这个provider，```linkTest: /link\.zhihu\.com\/\?target=(.*)/```表示符合```/link\.zhihu\.com\/\?target=(.*)/```这个正则形式的链接要被替换掉
+这里“知乎专栏”是我给provider起的名字，这个名字是任意的，```urlTest: /zhuanlan\.zhihu\.com/,```表示我要在zhuanlan.zhihu.com上启用这个provider，```linkTest: /link\.zhihu\.com\/\?target=(.*)/```表示符合```/link\.zhihu\.com\/\?target=(.*)/```这个正则形式的链接要被替换掉
 ```
 resolveRedirect: function (element) {
   RedirectApp.removeLinkRedirect(
