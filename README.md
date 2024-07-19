@@ -88,17 +88,58 @@
 - ✔️ QQ
 - ✔️ UrlShare
 
-### 贡献代码
+### 用户自定义
 
-需要通过 NodeJs / Deno / Bun 把 TypeScript 编译成 javascript  
-其中/目录下的remove-link-redirects.js是我根据webpack打包得到的js文件自行重写的可阅读的js文件，目前发布的也是这个版本  
-/dist/目录下的去除链接重定向.user.js是webpack自动打包生成的单文件js （基本已不维护，目前只维护上面的单文件结构可读的js）
+#### 😊欢迎有编程经验的用户编写自定义的provider然后提交到[greasyfork反馈区](https://greasyfork.org/zh-CN/scripts/483475-%E5%8E%BB%E9%99%A4%E9%93%BE%E6%8E%A5%E9%87%8D%E5%AE%9A%E5%90%91/feedback)或是[github反馈区](https://github.com/MerielVaren/remove-link-redirects/issues/new/choose)😊
 
-```bash
-git clone https://github.com/MerielVaren/remove-link-redirects.git
-
-cd ./remove-link-redirects
-
-npm install
-npm run build
+对于有编程经验的用户，可以自定义自己的provider并使用  
+  
+插件中有两个类，AutoJumpApp负责处理自动跳转的情况，RedirectApp负责处理原地替换重定向链接的情况，这两个类里面都有providers这个数组，用户可以在这个数组里面添加对应的provider  
+  
+当RedirectApp比较难处理（比如CSDN博客上的外链，但是一般RedirectApp不能处理的情况很少）或是用户不太理解RedirectApp作用方式的时候可以自定义AutoJumpApp的provider，这个provider的定义简单且直接，其结构为
 ```
+{
+  name: string,
+  urlTest: RegExp
+}
+```
+其中name为用户自己取的名字，urlTest为跳转链接的url，如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，需要用户将target=后面对应的最终链接的部分写成```(.*)```，比如```urlTest: /link\.csdn\.net\/\?target=(.*)/```
+  
+
+RedirectApp处理的是原地替换链接的情况，当用户可以获取到重定向链接时可以自定义RedirectApp的provider，其基础结构为
+```
+{
+  name: string,
+  urlTest: RegExp | Boolean | Function
+  linkTest: RegExp | Boolean | Function,
+  resolveRedirect: Function
+}
+```
+其中name为用户自己取的名字，urlTest为一个返回布尔值的属性，表示“是否要在当前域名上启用”，linkTest为一个返回布尔值的属性，表示“什么样的链接要在当前网页上被替换”，resolveRedirect内部会调用RedirectApp.removeLinkRedirect(element, realUrl, this)，其中element和this是固定值不需要改，realUrl表示“要被替换的链接最终的形式是什么”  
+
+举个例子
+```
+{
+  name: "知乎专栏",
+  urlTest: /zhuanlan\.zhihu\.com/,
+  linkTest: /link\.zhihu\.com\/\?target=(.*)/,
+  resolveRedirect: function (element) {
+    RedirectApp.removeLinkRedirect(
+      element,
+      new URL(element.href).searchParams.get("target"),
+      this
+    );
+  },
+},
+```
+这里“知乎专栏”是我给provider起的名字，```urlTest: /zhuanlan\.zhihu\.com/,```表示我要在zhuanlan.zhihu.com上启用这个provider，```linkTest: /link\.zhihu\.com\/\?target=(.*)/```表示符合```/link\.zhihu\.com\/\?target=(.*)/```这个正则形式的链接要被替换掉
+```
+resolveRedirect: function (element) {
+  RedirectApp.removeLinkRedirect(
+    element,
+    new URL(element.href).searchParams.get("target"),
+    this
+  );
+},
+```
+表示这些链接最终要被替换成```new URL(element.href).searchParams.get("target")```的形式，其中element.href是符合的链接
