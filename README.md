@@ -2,7 +2,7 @@
 
 ### 很多同类插件在解决诸如bing，搜狗等对重定向链接进行加密的情况时，采取的方法是插件在后台模拟你本人点击链接，等到在后台它重定向结束得到最终链接后，再帮你贴到当前页面上来，这样你就能点击到去重后的链接了。然而这样是非常缓慢的，并且和网速强关联，有可能你在当前网页已经浏览到很下面了，后台还没结束上面链接的操作过程，此时你仍然会点击到重定向链接。在本插件中，凡是能够将加密链接解析或用未加密链接替代的情况，一律优先解析而不会在后台访问，这使得本脚本在很多时候加载速度相较于同类型脚本有巨大提升
 
-### 🤗目前已加入自动跳转功能并大幅度重构了代码结构，效率更高，解析速度更快🤗
+### 🤗目前已使用三级方案在确保效率和解析速度的同时最大化的保证去除重定向链接的有效性🤗
 
 ### 去除链接重定向
 
@@ -93,16 +93,17 @@
 
 #### 😊欢迎有编程经验的用户编写自定义的provider然后提交到[greasyfork反馈区](https://greasyfork.org/zh-CN/scripts/483475-%E5%8E%BB%E9%99%A4%E9%93%BE%E6%8E%A5%E9%87%8D%E5%AE%9A%E5%90%91/feedback)或是[github反馈区](https://github.com/MerielVaren/remove-link-redirects/issues/new/choose)😊
 
-对于有编程经验的用户，可以自定义自己的provider并使用  
-  
-插件中有两个类，AutoJumpApp负责处理自动跳转的情况，RedirectApp负责处理原地替换重定向链接的情况，这两个类里面都有providers这个数组，用户可以在这个数组里面添加对应的provider  
+对于有编程经验的用户，可以自定义自己的provider并使用
 
-两者的区别是（以下是一个示例）  
-<strong>AutoJumpApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> 用户点开了一个[重定向链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> 进入了[跳转页面](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> AutoJumpApp检测到跳转页面的链接帮你自动跳转 -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)</strong>  
-<strong>RedirectApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> RedirectApp检测到所有的这些链接 [比如这个链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows),然后直接在当前网页里把这些链接替换成了原来的链接 [比如这个原链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户点开了[某个链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)</strong>  
+插件中有两个类，AutoJumpApp负责处理自动跳转的情况，RedirectApp负责处理原地替换重定向链接的情况，这两个类里面都有providers这个数组，用户可以在这个数组里面添加对应的provider
+
+两者的区别是（以下是一个示例）
+`<strong>`AutoJumpApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> 用户点开了一个[重定向链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> 进入了[跳转页面](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> AutoJumpApp检测到跳转页面的链接帮你自动跳转 -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)`</strong>`
+`<strong>`RedirectApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> RedirectApp检测到所有的这些链接 [比如这个链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows),然后直接在当前网页里把这些链接替换成了原来的链接 [比如这个原链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户点开了[某个链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)`</strong>`
 可以看到，RedirectApp的方案是“做在前面”，AutoJumpApp的方案是“马后炮”，因此能用RedirectApp的情况建议优先用RedirectApp
-  
+
 当RedirectApp比较难处理（比如CSDN博客上的外链，但是一般RedirectApp不能处理的情况很少）或是用户不太理解RedirectApp作用方式的时候可以自定义AutoJumpApp的provider，这个provider的定义简单且直接，其结构为
+
 ```
 {
   name: string,
@@ -110,9 +111,11 @@
   resolveAutoJump  : Function
 }
 ```
-其中name为用户自己取的名字，urlTest为跳转链接的url，如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，需要用户将target=后面对应的最终链接的部分写成```(.*)```，比如```urlTest: /link\.csdn\.net\/\?target=(.*)/```  
-  
-<strong>举个例子</strong> 
+
+其中name为用户自己取的名字，urlTest为跳转链接的url，如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，需要用户将target=后面对应的最终链接的部分写成 ``(.*)``，比如 ``urlTest: /link\.csdn\.net\/\?target=(.*)/``
+
+`<strong>`举个例子`</strong>`
+
 ```
 {
   name: "CSDN",
@@ -124,7 +127,8 @@
   },
 },
 ```
-其中CSDN是我给这个provider起的名字，这个名字是任意的，```urlTest: /link\.csdn\.net\/\?target=(.*)/,```表示这个形式的网页是跳转网页，比如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，当然你也可以写成```/https:\/\/link\.csdn\.net\/\?target=(.*)```，只要不要忘记转义就可以了，如果你不知道转义的意思，也可以简单的理解为 <strong>在. * + ? / ( ) [ ] { }这些字符前面加上\，变成\\. \\* \\+ \\? \\/ \\( \\) \\[ \\] \\{ \\}的形式</strong>  
+
+其中CSDN是我给这个provider起的名字，这个名字是任意的，``urlTest: /link\.csdn\.net\/\?target=(.*)/,``表示这个形式的网页是跳转网页，比如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，当然你也可以写成 ``/https:\/\/link\.csdn\.net\/\?target=(.*)``，只要不要忘记转义就可以了，如果你不知道转义的意思，也可以简单的理解为 `<strong>`在. * + ? / ( ) [ ] { }这些字符前面加上\，变成\\. \\* \\+ \\? \\/ \\( \\) \\[ \\] \\{ \\}的形式`</strong>`
 
 ```
 resolveAutoJump: function () {
@@ -133,9 +137,11 @@ resolveAutoJump: function () {
   );
 },
 ```
-resolveAutoJump表示处理跳转链接的方式，上面例子的处理方式就是从urlTest里面取出对应的最终网页的链接并且赋值给location.href  
+
+resolveAutoJump表示处理跳转链接的方式，上面例子的处理方式就是从urlTest里面取出对应的最终网页的链接并且赋值给location.href
 
 RedirectApp处理的是原地替换链接的情况，当用户可以获取到重定向链接时可以自定义RedirectApp的provider，其基础结构为
+
 ```
 {
   name: string,
@@ -144,9 +150,11 @@ RedirectApp处理的是原地替换链接的情况，当用户可以获取到重
   resolveRedirect: Function
 }
 ```
-其中name为用户自己取的名字，urlTest为一个返回布尔值的属性，表示“是否要在当前域名上启用”，linkTest为一个返回布尔值的属性，表示“什么样的链接要在当前网页上被替换”，resolveRedirect内部会调用RedirectApp.removeLinkRedirect(element, realUrl, this)，其中element和this是固定值不需要改，realUrl表示“要被替换的链接最终的形式是什么”  
 
-<strong>举个例子</strong>
+其中name为用户自己取的名字，urlTest为一个返回布尔值的属性，表示“是否要在当前域名上启用”，linkTest为一个返回布尔值的属性，表示“什么样的链接要在当前网页上被替换”，resolveRedirect内部会调用RedirectApp.removeLinkRedirect(element, realUrl, this)，其中element和this是固定值不需要改，realUrl表示“要被替换的链接最终的形式是什么”
+
+`<strong>`举个例子`</strong>`
+
 ```
 {
   name: "知乎专栏",
@@ -161,7 +169,9 @@ RedirectApp处理的是原地替换链接的情况，当用户可以获取到重
   },
 },
 ```
-这里“知乎专栏”是我给provider起的名字，这个名字是任意的，```urlTest: /zhuanlan\.zhihu\.com/,```表示我要在zhuanlan.zhihu.com上启用这个provider，```linkTest: /link\.zhihu\.com\/\?target=(.*)/```表示符合```/link\.zhihu\.com\/\?target=(.*)/```这个正则形式的链接要被替换掉
+
+这里“知乎专栏”是我给provider起的名字，这个名字是任意的，``urlTest: /zhuanlan\.zhihu\.com/,``表示我要在zhuanlan.zhihu.com上启用这个provider，``linkTest: /link\.zhihu\.com\/\?target=(.*)/``表示符合 ``/link\.zhihu\.com\/\?target=(.*)/``这个正则形式的链接要被替换掉
+
 ```
 resolveRedirect: function (element) {
   RedirectApp.removeLinkRedirect(
@@ -171,4 +181,5 @@ resolveRedirect: function (element) {
   );
 },
 ```
-表示这些链接最终要被替换成```new URL(element.href).searchParams.get("target")```的形式，其中element.href是符合的链接
+
+表示这些链接最终要被替换成 ``new URL(element.href).searchParams.get("target")``的形式，其中element.href是符合的链接
