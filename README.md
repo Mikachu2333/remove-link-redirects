@@ -97,10 +97,12 @@
 
 插件中有两个类，AutoJumpApp负责处理自动跳转的情况，RedirectApp负责处理原地替换重定向链接的情况，这两个类里面都有providers这个数组，用户可以在这个数组里面添加对应的provider
 
-两者的区别是（以下是一个示例）
-`<strong>`AutoJumpApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> 用户点开了一个[重定向链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> 进入了[跳转页面](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> AutoJumpApp检测到跳转页面的链接帮你自动跳转 -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)`</strong>`
-`<strong>`RedirectApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> RedirectApp检测到所有的这些链接 [比如这个链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows),然后直接在当前网页里把这些链接替换成了原来的链接 [比如这个原链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户点开了[某个链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)`</strong>`
-可以看到，RedirectApp的方案是“做在前面”，AutoJumpApp的方案是“马后炮”，因此能用RedirectApp的情况建议优先用RedirectApp
+> 两者的区别是（以下是一个示例）  
+>   
+> **AutoJumpApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> 用户点开了一个[重定向链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> 进入了[跳转页面](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> AutoJumpApp检测到跳转页面的链接帮你自动跳转 -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)**
+> **RedirectApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> RedirectApp检测到所有的这些链接 [比如这个链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows),然后直接在当前网页里把这些链接替换成了原来的链接 [比如这个原链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户点开了[某个链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)**  
+>   
+> 可以看到，RedirectApp的方案是“遇到重定向链接就提前替换掉”，AutoJumpApp的方案是“进入跳转网页后才自动跳转”，因此能用RedirectApp的情况建议优先用RedirectApp
 
 当RedirectApp比较难处理（比如CSDN博客上的外链，但是一般RedirectApp不能处理的情况很少）或是用户不太理解RedirectApp作用方式的时候可以自定义AutoJumpApp的provider，这个provider的定义简单且直接，其结构为
 
@@ -114,7 +116,7 @@
 
 其中name为用户自己取的名字，urlTest为跳转链接的url，如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，需要用户将target=后面对应的最终链接的部分写成 ``(.*)``，比如 ``urlTest: /link\.csdn\.net\/\?target=(.*)/``
 
-`<strong>`举个例子`</strong>`
+**举个例子**
 
 ```
 {
@@ -128,7 +130,7 @@
 },
 ```
 
-其中CSDN是我给这个provider起的名字，这个名字是任意的，``urlTest: /link\.csdn\.net\/\?target=(.*)/,``表示这个形式的网页是跳转网页，比如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，当然你也可以写成 ``/https:\/\/link\.csdn\.net\/\?target=(.*)``，只要不要忘记转义就可以了，如果你不知道转义的意思，也可以简单的理解为 `<strong>`在. * + ? / ( ) [ ] { }这些字符前面加上\，变成\\. \\* \\+ \\? \\/ \\( \\) \\[ \\] \\{ \\}的形式`</strong>`
+其中CSDN是我给这个provider起的名字，这个名字是任意的，``urlTest: /link\.csdn\.net\/\?target=(.*)/,``表示这个形式的网页是跳转网页，比如[https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F](https://link.csdn.net/?target=https%3A%2F%2F3.jetbra.in%2F)，当然你也可以写成 ``/https:\/\/link\.csdn\.net\/\?target=(.*)``，只要不要忘记转义就可以了，如果你不知道转义的意思，也可以简单的理解为 **在. * + ? / ( ) [ ] { }这些字符前面加上\，变成\\. \\* \\+ \\? \\/ \\( \\) \\[ \\] \\{ \\}的形式**
 
 ```
 resolveAutoJump: function () {
@@ -153,7 +155,7 @@ RedirectApp处理的是原地替换链接的情况，当用户可以获取到重
 
 其中name为用户自己取的名字，urlTest为一个返回布尔值的属性，表示“是否要在当前域名上启用”，linkTest为一个返回布尔值的属性，表示“什么样的链接要在当前网页上被替换”，resolveRedirect内部会调用RedirectApp.removeLinkRedirect(element, realUrl, this)，其中element和this是固定值不需要改，realUrl表示“要被替换的链接最终的形式是什么”
 
-`<strong>`举个例子`</strong>`
+**举个例子**
 
 ```
 {
