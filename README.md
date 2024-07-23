@@ -10,12 +10,13 @@
 
 > 注意事项：
 >
-> 重定向一般有两种目的
->
+> - 重定向一般有两种目的
+>  
 > 1. 追踪用户打开了哪些 URL（bing的/ck/重定向就属于这一种）
-> 2. 在用户跳转到站外之前进行确认地址，防止打开不明的页面（知乎的“您正在跳转到其他页面”就属于这一种）
+> 2. 在用户跳转到站外之前进行确认地址，防止打开不明的页面（知乎的“您正在跳转到其他页面”就属于这一种）  
 >
-> 在使用脚本[东方永页机](https://greasyfork.org/zh-CN/scripts/438684-pagetual)时，如果遇到没有去除重定向的问题，请尝试右击屏幕右侧的侧边栏开启“动态加载”
+> - 在使用脚本[东方永页机](https://greasyfork.org/zh-CN/scripts/438684-pagetual)时，如果遇到没有去除重定向的问题，请尝试右击屏幕右侧的侧边栏开启“动态加载”    
+> - 如果遇到自动跳转慢的问题，试试打开"Violentmonkey"设置里的"同步page模式"
 
 ### 脚本特点
 
@@ -99,7 +100,7 @@
 
 > 两者的区别是（以下是一个示例）  
 >   
-> **AutoJumpApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> 用户点开了一个[重定向链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> 进入了[跳转页面](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> AutoJumpApp检测到跳转页面的链接帮你自动跳转 -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)**
+> **AutoJumpApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> 用户点开了一个[重定向链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> 进入了[跳转页面](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> AutoJumpApp检测到跳转页面的链接帮你自动跳转 -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)**  
 > **RedirectApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> RedirectApp检测到所有的这些链接 [比如这个链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows),然后直接在当前网页里把这些链接替换成了原来的链接 [比如这个原链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户点开了[某个链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)**  
 >   
 > 可以看到，RedirectApp的方案是“遇到重定向链接就提前替换掉”，AutoJumpApp的方案是“进入跳转网页后才自动跳转”，因此能用RedirectApp的情况建议优先用RedirectApp
