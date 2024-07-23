@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。并且保证去除重定向的有效性，采用三级方案，原地解析->自动跳转->后台访问，保证了一定能去除重定向链接
-// @version           2.4.9
+// @version           2.5.0
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://*/*
@@ -26,8 +26,8 @@
      * 注册服务提供者
      * @param providers
      */
-    registerProvider(providers) {
-      for (const provider of providers) {
+    registerProvider() {
+      for (const provider of AutoJumpApp.providers) {
         if (
           provider.urlTest instanceof RegExp &&
           !provider.urlTest.test(location.href)
@@ -51,22 +51,12 @@
      * @returns
      * */
     bootstrap() {
+      this.registerProvider();
       if (this.registeredProvider) {
         this.registeredProvider.resolveAutoJump();
         return true;
       }
       return false;
-    }
-
-    preventAutoJump() {
-      const checkAndPrevent = () => {
-        if (this.registeredProvider) {
-          this.registeredProvider.resolveAutoJump();
-        } else {
-          requestAnimationFrame(checkAndPrevent);
-        }
-      };
-      requestAnimationFrame(checkAndPrevent);
     }
 
     static providers = [
@@ -172,12 +162,6 @@
     ];
   }
 
-  const autoJumpApp = new AutoJumpApp();
-  const autoJumpResult = autoJumpApp
-    .registerProvider(AutoJumpApp.providers)
-    .bootstrap();
-  if (autoJumpResult) return;
-
   /********** 以下为重定向解析部分 **********/
   class RedirectApp {
     /**
@@ -205,7 +189,7 @@
      * @param provider
      */
     static isMatchProvider(element, provider) {
-      if (element.getAttribute(RedirectApp.Marker.RedirectStatusDone)) {
+      if (element.getAttribute(RedirectApp.REDIRECT_COMPLETED)) {
         return false;
       }
       if (
@@ -229,9 +213,7 @@
     /**
      * 解析完成的标志
      */
-    static Marker = {
-      RedirectStatusDone: "redirect-status-done",
-    };
+    static REDIRECT_COMPLETED = "redirect-completed";
 
     /**
      * 兜底解析器
@@ -272,7 +254,7 @@
      * @returns
      * */
     static removeLinkRedirect(element, realUrl, caller, options) {
-      element.setAttribute(RedirectApp.Marker.RedirectStatusDone, "true");
+      element.setAttribute(RedirectApp.REDIRECT_COMPLETED, "true");
       if ((realUrl && element.href !== realUrl) || options?.force) {
         element.href = realUrl;
       } else if (caller) {
@@ -323,7 +305,7 @@
             this.handleNode(node);
           } else {
             const aNodes = node.querySelectorAll?.(
-              `a:not([${RedirectApp.Marker.RedirectStatusDone}])`
+              `a:not([${RedirectApp.REDIRECT_COMPLETED}])`
             );
             aNodes?.forEach((aNode) => this.handleNode(aNode));
           }
@@ -361,8 +343,8 @@
      * 注册服务提供者
      * @param providers
      */
-    registerProviders(providers) {
-      for (const provider of providers) {
+    registerProviders() {
+      for (const provider of RedirectApp.providers) {
         if (provider.urlTest === false) {
           continue;
         }
@@ -384,6 +366,7 @@
      * 启动应用
      */
     bootstrap() {
+      this.registerProviders();
       addEventListener("DOMContentLoaded", this.pageOnReady.bind(this));
       this.mutationObserver.observe(document, {
         childList: true,
@@ -562,7 +545,6 @@
               element.onclick = function (e) {
                 // 阻止事件冒泡, 因为上层元素绑定的click事件会重定向
                 e.stopPropagation?.();
-                element.setAttribute("target", "_blank");
               };
             }
           }
@@ -699,13 +681,10 @@
           );
           const eles = [].slice.call(document.querySelectorAll("a.hrTbp"));
           for (const ele of eles) {
-            if (
-              !ele.href ||
-              ele.getAttribute(RedirectApp.Marker.RedirectStatusDone)
-            ) {
+            if (!ele.href || ele.getAttribute(RedirectApp.REDIRECT_COMPLETED)) {
               continue;
             }
-            ele.setAttribute(RedirectApp.Marker.RedirectStatusDone, "true");
+            ele.setAttribute(RedirectApp.REDIRECT_COMPLETED, "true");
             ele.setAttribute("target", "_blank");
             ele.addEventListener(
               "click",
@@ -1119,6 +1098,10 @@
     ];
   }
 
+  const autoJumpApp = new AutoJumpApp();
+  const autoJumpResult = autoJumpApp.bootstrap();
+  if (autoJumpResult) return;
+
   const redirectApp = new RedirectApp();
-  redirectApp.registerProviders(RedirectApp.providers).bootstrap();
+  redirectApp.bootstrap();
 })();
