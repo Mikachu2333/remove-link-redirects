@@ -100,8 +100,8 @@
 
 > 两者的区别是（以下是一个示例）  
 >   
-> **AutoJumpApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> 用户点开了一个[重定向链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> 进入了[跳转页面](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows) -> AutoJumpApp检测到跳转页面的链接帮你自动跳转 -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)**  
-> **RedirectApp：有[重定向链接的网站](https://blog.csdn.net/fyx_demo/article/details/140235661) -> RedirectApp检测到所有的这些链接 [比如这个链接](https://link.csdn.net/?target=https%3A%2F%2Fwww.jetbrains.com%2Fzh-cn%2Fidea%2Fdownload%2F%3Fsection%3Dwindows),然后直接在当前网页里把这些链接替换成了原来的链接 [比如这个原链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户点开了[某个链接](https://www.jetbrains.com/zh-cn/idea/download/?section=windows) -> 用户进入[原网页](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)**  
+> - **AutoJumpApp：有重定向链接的网站 -> 用户点开了一个重定向链接 -> 进入了跳转页面 -> AutoJumpApp检测到跳转页面的链接帮你自动跳转 -> 用户进入原网页**  
+> - **RedirectApp：有重定向链接的网站 -> RedirectApp检测到所有的这些链接,然后直接在当前网页里把这些链接替换成了原来的链接 -> 用户点开了某个链接 -> 用户进入原网页**  
 >   
 > 可以看到，RedirectApp的方案是“遇到重定向链接就提前替换掉”，AutoJumpApp的方案是“进入跳转网页后才自动跳转”，因此能用RedirectApp的情况建议优先用RedirectApp
 
