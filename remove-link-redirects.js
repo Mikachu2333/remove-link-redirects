@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。并且保证去除重定向的有效性，采用三级方案，原地解析->自动跳转->后台访问，保证了一定能去除重定向链接
-// @version           2.5.0
+// @version           2.5.1
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://*/*
@@ -247,13 +247,13 @@
      * 移除链接重定向
      * 首先判断是否可以直接解析链接，如果可以则直接解析
      * 如果不行，则调用fallbackResolver解析
-     * @param element
-     * @param realUrl
-     * @param caller
-     * @param options
+     * @param caller 调用者
+     * @param element 链接元素
+     * @param realUrl 真实链接
+     * @param options 配置项
      * @returns
      * */
-    static removeLinkRedirect(element, realUrl, caller, options) {
+    static removeLinkRedirect(caller, element, realUrl, options) {
       element.setAttribute(RedirectApp.REDIRECT_COMPLETED, "true");
       if ((realUrl && element.href !== realUrl) || options?.force) {
         element.href = realUrl;
@@ -304,10 +304,11 @@
           if (node instanceof HTMLAnchorElement) {
             this.handleNode(node);
           } else {
-            const aNodes = node.querySelectorAll?.(
-              `a:not([${RedirectApp.REDIRECT_COMPLETED}])`
-            );
-            aNodes?.forEach((aNode) => this.handleNode(aNode));
+            // 有些网站被observer观察到的是一个div，里面包含了很多a标签
+            // 这种情况下，需要对所有的a标签进行处理
+            node
+              ?.querySelectorAll?.(`a:not([${RedirectApp.REDIRECT_COMPLETED}])`)
+              ?.forEach((aNode) => this.handleNode(aNode));
           }
         });
       }
@@ -330,8 +331,10 @@
 
     /**
      * 当页面准备就绪时，进行初始化动作
+     * 有一些服务提供者需要在页面准备就绪时进行特殊的初始化操作
+     * 比如百度搜索，需要监听URL变化
      */
-    async pageOnReady() {
+    async initProviders() {
       for (const provider of this.registeredProviders) {
         if (provider.onInit) {
           await provider.onInit();
@@ -367,7 +370,7 @@
      */
     bootstrap() {
       this.registerProviders();
-      addEventListener("DOMContentLoaded", this.pageOnReady.bind(this));
+      addEventListener("DOMContentLoaded", this.initProviders.bind(this));
       this.mutationObserver.observe(document, {
         childList: true,
         subtree: true,
@@ -381,9 +384,9 @@
         linkTest: /\/[^\?]*\?u=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("u"),
-            this
+            new URL(element.href).searchParams.get("u")
           );
         },
       },
@@ -401,7 +404,7 @@
               url = /(http|https)?:\/\//.test(match[1]) ? match[1] : void 0;
             }
           }
-          RedirectApp.removeLinkRedirect(element, url, this);
+          RedirectApp.removeLinkRedirect(this, element, url);
         },
       },
       {
@@ -410,9 +413,9 @@
         linkTest: /afdian\.net\/link\?target=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("target"),
-            this
+            new URL(element.href).searchParams.get("target")
           );
         },
       },
@@ -423,7 +426,7 @@
         resolveRedirect: function (element) {
           if (element.hasAttribute("data-mce-href")) {
             if (!element.onclick) {
-              RedirectApp.removeLinkRedirect(element, element.href, this, {
+              RedirectApp.removeLinkRedirect(this, element, element.href, {
                 force: true,
               });
               element.onclick = function (e) {
@@ -469,9 +472,9 @@
           /(www|app)\.yinxiang\.com\/OutboundRedirect\.action\?dest=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("dest"),
-            this
+            new URL(element.href).searchParams.get("dest")
           );
         },
       },
@@ -482,6 +485,7 @@
         textDecoder: new TextDecoder("utf-8"),
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
             this.textDecoder.decode(
               Uint8Array.from(
@@ -495,8 +499,7 @@
                   )
                 ).map((e) => e.charCodeAt(0))
               )
-            ),
-            this
+            )
           );
         },
       },
@@ -525,9 +528,9 @@
         linkTest: /blog\.51cto\.com\/.*transfer\?(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("url"),
-            this
+            new URL(element.href).searchParams.get("url")
           );
         },
       },
@@ -539,7 +542,7 @@
           const container = document.querySelector("#content_views");
           if (container?.contains(element)) {
             if (!element.onclick && element.origin !== window.location.origin) {
-              RedirectApp.removeLinkRedirect(element, element.href, this, {
+              RedirectApp.removeLinkRedirect(this, element, element.href, {
                 force: true,
               });
               element.onclick = function (e) {
@@ -556,9 +559,9 @@
         linkTest: /zhihu\.com\/\?target=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("target"),
-            this
+            new URL(element.href).searchParams.get("target")
           );
         },
       },
@@ -568,9 +571,9 @@
         linkTest: /www\.google\.com\/url\?q=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("q"),
-            this
+            new URL(element.href).searchParams.get("q")
           );
         },
       },
@@ -580,9 +583,9 @@
         linkTest: /getpocket\.com\/redirect\?url=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("url"),
-            this
+            new URL(element.href).searchParams.get("url")
           );
         },
       },
@@ -592,9 +595,9 @@
         linkTest: /gitee\.com\/link\?target=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("target"),
-            this
+            new URL(element.href).searchParams.get("target")
           );
         },
       },
@@ -604,9 +607,9 @@
         linkTest: /infoq\.cn\/link\?target=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("target"),
-            this
+            new URL(element.href).searchParams.get("target")
           );
         },
       },
@@ -616,7 +619,7 @@
         linkTest: /link\.juejin\.(im|cn)\/\?target=(.*)/,
         resolveRedirect: function (element) {
           const finalURL = new URL(element.href).searchParams.get("target");
-          RedirectApp.removeLinkRedirect(element, finalURL, this);
+          RedirectApp.removeLinkRedirect(this, element, finalURL);
           if (this.linkTest.test(element.title)) {
             element.title = finalURL;
           }
@@ -644,9 +647,9 @@
         linkTest: /mail\.qq\.com.+gourl=(.+).*/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("gourl"),
-            this
+            new URL(element.href).searchParams.get("gourl")
           );
         },
       },
@@ -656,9 +659,9 @@
         linkTest: /oschina\.net\/action\/GoToLink\?url=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("url"),
-            this
+            new URL(element.href).searchParams.get("url")
           );
         },
       },
@@ -675,9 +678,9 @@
         },
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("q"),
-            this
+            new URL(element.href).searchParams.get("q")
           );
           const eles = [].slice.call(document.querySelectorAll("a.hrTbp"));
           for (const ele of eles) {
@@ -702,9 +705,9 @@
         linkTest: /sspai\.com\/link\?target=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("target"),
-            this
+            new URL(element.href).searchParams.get("target")
           );
         },
       },
@@ -714,9 +717,9 @@
         linkTest: /steamcommunity\.com\/linkfilter\/\?url=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("url"),
-            this
+            new URL(element.href).searchParams.get("url")
           );
         },
       },
@@ -728,12 +731,14 @@
           let url = void 0;
           const text = element.innerText || element.textContent || void 0;
           const isUrl = /(http|https)?:\/\//.test(text);
-          try {
-            if (isUrl) url = decodeURIComponent(text);
-          } catch (_) {
-            if (isUrl) url = text;
+          if (isUrl) {
+            try {
+              url = decodeURIComponent(text);
+            } catch (_) {
+              url = text;
+            }
           }
-          RedirectApp.removeLinkRedirect(element, url, this);
+          RedirectApp.removeLinkRedirect(this, element, url);
         },
       },
       {
@@ -743,12 +748,12 @@
         resolveRedirect: function (element) {
           if (/(http|https)?:\/\//.test(element.title)) {
             const url = decodeURIComponent(element.title);
-            RedirectApp.removeLinkRedirect(element, url, this);
+            RedirectApp.removeLinkRedirect(this, element, url);
             return;
           }
           const innerText = element.innerText.replace(/…$/, "");
           if (/(http|https)?:\/\//.test(innerText)) {
-            RedirectApp.removeLinkRedirect(element, innerText, this);
+            RedirectApp.removeLinkRedirect(this, element, innerText);
             return;
           }
         },
@@ -765,7 +770,7 @@
           try {
             url = decodeURIComponent(element.title);
           } catch (_) {}
-          RedirectApp.removeLinkRedirect(element, url, this);
+          RedirectApp.removeLinkRedirect(this, element, url);
         },
       },
       {
@@ -774,9 +779,9 @@
         linkTest: /weibo\.(com|cn)\/sinaurl\?u=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            decodeURIComponent(new URL(element.href).searchParams.get("u")),
-            this
+            decodeURIComponent(new URL(element.href).searchParams.get("u"))
           );
         },
       },
@@ -804,7 +809,7 @@
             url !== "undefined" &&
             !this.unresolvableWebsites.some((u) => url.includes(u))
           ) {
-            RedirectApp.removeLinkRedirect(element, url, this);
+            RedirectApp.removeLinkRedirect(this, element, url);
           } else {
             this.fallbackResolver.resolveRedirect(element);
           }
@@ -824,9 +829,9 @@
         linkTest: /douban\.com\/link2\/?\?url=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("url"),
-            this
+            new URL(element.href).searchParams.get("url")
           );
         },
       },
@@ -854,14 +859,14 @@
           // 尝试去除重定向
           if (element.getAttribute("data-href")) {
             const realUrl = element.getAttribute("data-href");
-            RedirectApp.removeLinkRedirect(element, realUrl, this);
+            RedirectApp.removeLinkRedirect(this, element, realUrl);
           }
           const url = new URL(element.href);
           if (url.searchParams.get("url")) {
             RedirectApp.removeLinkRedirect(
+              this,
               element,
-              url.searchParams.get("url"),
-              this
+              url.searchParams.get("url")
             );
           }
         },
@@ -883,9 +888,9 @@
         resolveRedirect: function (element) {
           const search = new URL(element.href).searchParams;
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            search.get("to") || search.get("t") || search.get("url"),
-            this
+            search.get("to") || search.get("t") || search.get("url")
           );
         },
       },
@@ -895,9 +900,9 @@
         linkTest: /link\.logonews\.cn\/\?url=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("url"),
-            this
+            new URL(element.href).searchParams.get("url")
           );
         },
       },
@@ -910,7 +915,7 @@
             element.getAttribute("data-mdurl") ||
             element.getAttribute("e-landurl");
           if (url) {
-            RedirectApp.removeLinkRedirect(element, url, this);
+            RedirectApp.removeLinkRedirect(this, element, url);
           }
           // remove track
           element.removeAttribute("e_href");
@@ -925,7 +930,7 @@
           const vrwrap = element.closest(".vrwrap");
           const rSech = vrwrap.querySelector(".r-sech[data-url]");
           const url = rSech.getAttribute("data-url");
-          RedirectApp.removeLinkRedirect(element, url, this);
+          RedirectApp.removeLinkRedirect(this, element, url);
         },
       },
       {
@@ -934,9 +939,9 @@
         linkTest: /www\.youtube\.com\/redirect\?.{1,}/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("q"),
-            this
+            new URL(element.href).searchParams.get("q")
           );
         },
       },
@@ -946,9 +951,9 @@
         linkTest: /zhihu\.com\/\?target=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("target"),
-            this
+            new URL(element.href).searchParams.get("target")
           );
         },
       },
@@ -962,9 +967,9 @@
             element.getAttribute("data-url") ||
             void 0;
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            decodeURIComponent(url),
-            this
+            decodeURIComponent(url)
           );
         },
       },
@@ -974,9 +979,9 @@
         linkTest: /link\.zhihu\.com\/\?target=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("target"),
-            this
+            new URL(element.href).searchParams.get("target")
           );
         },
       },
@@ -986,9 +991,9 @@
         linkTest: /leetcode\.(cn|com)\/link\?target=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("target"),
-            this
+            new URL(element.href).searchParams.get("target")
           );
         },
       },
@@ -999,9 +1004,9 @@
           /cloud\.tencent\.com\/developer\/tools\/blog-entry\?target=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("target"),
-            this
+            new URL(element.href).searchParams.get("target")
           );
         },
       },
@@ -1011,9 +1016,9 @@
         linkTest: /www\.coolapk\.com\/link\?url=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("url"),
-            this
+            new URL(element.href).searchParams.get("url")
           );
         },
       },
@@ -1023,9 +1028,9 @@
         linkTest: /support\.qq\.com\/.*link-jump\?jump=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("jump"),
-            this
+            new URL(element.href).searchParams.get("jump")
           );
         },
       },
@@ -1035,9 +1040,9 @@
         linkTest: /developers\.weixin\.qq\.com\/.*href=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("href"),
-            this
+            new URL(element.href).searchParams.get("href")
           );
         },
       },
@@ -1047,9 +1052,9 @@
         linkTest: /www\.pc6\.com\/.*\?gourl=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("gourl"),
-            this
+            new URL(element.href).searchParams.get("gourl")
           );
         },
       },
@@ -1059,9 +1064,9 @@
         linkTest: /c\.pc\.qq\.com.*\?pfurl=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            new URL(element.href).searchParams.get("pfurl"),
-            this
+            new URL(element.href).searchParams.get("pfurl")
           );
         },
       },
@@ -1071,9 +1076,9 @@
         linkTest: /.+\.urlshare\..+\/.*url=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
+            this,
             element,
-            decodeURIComponent(new URL(element.href).searchParams.get("url")),
-            this
+            decodeURIComponent(new URL(element.href).searchParams.get("url"))
           );
         },
       },
@@ -1091,7 +1096,7 @@
           const doc = parser.parseFromString(res.responseText, "text/html");
           const a = doc.querySelector("a");
           if (a) {
-            RedirectApp.removeLinkRedirect(element, a.href, this);
+            RedirectApp.removeLinkRedirect(this, element, a.href);
           }
         },
       },
