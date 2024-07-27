@@ -154,7 +154,7 @@ RedirectApp处理的是原地替换链接的情况，当用户可以获取到重
 }
 ```
 
-其中name为用户自己取的名字，urlTest为一个返回布尔值的属性，表示“是否要在当前域名上启用”，linkTest为一个返回布尔值的属性，表示“什么样的链接要在当前网页上被替换”，resolveRedirect内部会调用RedirectApp.removeLinkRedirect(element, realUrl, this)，其中element和this是固定值不需要改，realUrl表示“要被替换的链接最终的形式是什么”
+其中name为用户自己取的名字，urlTest为一个返回布尔值的属性，表示“是否要在当前域名上启用”，linkTest为一个返回布尔值的属性，表示“什么样的链接要在当前网页上被替换”，resolveRedirect内部会调用RedirectApp.removeLinkRedirect(this, element, realUrl, options)，其中this和element是固定值不需要改，realUrl表示“要被替换的链接最终的形式是什么”，options是一个可选的值，一般不需要传
 
 **举个例子**
 
@@ -165,9 +165,9 @@ RedirectApp处理的是原地替换链接的情况，当用户可以获取到重
   linkTest: /link\.zhihu\.com\/\?target=(.*)/,
   resolveRedirect: function (element) {
     RedirectApp.removeLinkRedirect(
+      this,
       element,
       new URL(element.href).searchParams.get("target"),
-      this
     );
   },
 },
@@ -178,9 +178,9 @@ RedirectApp处理的是原地替换链接的情况，当用户可以获取到重
 ```
 resolveRedirect: function (element) {
   RedirectApp.removeLinkRedirect(
+    this,
     element,
     new URL(element.href).searchParams.get("target"),
-    this
   );
 },
 ```
