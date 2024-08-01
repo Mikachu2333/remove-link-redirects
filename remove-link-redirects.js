@@ -1109,11 +1109,6 @@
           }
         },
       },
-      // {
-      //   name: "腾讯文档",
-      //   urlTest: /docs\.qq\.com/,
-      //   linkTest: /docs\.qq\.com\/d\/(.*)/,
-      // }
     ];
   }
 
