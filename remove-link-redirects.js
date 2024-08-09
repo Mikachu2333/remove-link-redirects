@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。并且保证去除重定向的有效性，采用三级方案，原地解析->自动跳转->后台访问，保证了一定能去除重定向链接
-// @version           2.5.6
+// @version           2.5.7
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://*/*
@@ -245,7 +245,7 @@
 
       async resolveRedirect(element) {
         const href = element.href;
-      
+
         if (!this.processedUrls.has(href)) {
           // 创建一个新的 Promise 并存储在 Map 中
           let resolvePromise;
@@ -253,7 +253,7 @@
             resolvePromise = resolve;
           });
           this.processedUrls.set(href, promise);
-      
+
           try {
             const res = await GM.xmlHttpRequest({
               method: "GET",
@@ -275,7 +275,7 @@
           }
         } else {
           const cachedValue = this.processedUrls.get(href);
-      
+
           if (cachedValue instanceof Promise) {
             // 如果是 Promise，等待其完成
             await cachedValue;
@@ -1098,11 +1098,26 @@
         name: "pc6下载站",
         urlTest: /www\.pc6\.com/,
         linkTest: /www\.pc6\.com\/.*\?gourl=(.*)/,
+        customDecode: function (encoded) {
+          const key = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+          const len = key.length;
+          let d = 0;
+          let s = new Array(Math.floor(encoded.length / 3));
+          const b = s.length;
+          for (let i = 0; i < b; i++) {
+            const b1 = key.indexOf(encoded.charAt(d++));
+            const b2 = key.indexOf(encoded.charAt(d++));
+            const b3 = key.indexOf(encoded.charAt(d++));
+            s[i] = b1 * len * len + b2 * len + b3;
+          }
+          const decoded = String.fromCharCode(...s);
+          return decoded;
+        },
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
             this,
             element,
-            new URL(element.href).searchParams.get("gourl")
+            this.customDecode(new URL(element.href).searchParams.get("gourl"))
           );
         },
       },
