@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。并且保证去除重定向的有效性，采用三级方案，原地解析->自动跳转->后台访问，保证了一定能去除重定向链接
-// @version           2.5.5
+// @version           2.5.6
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://*/*
@@ -244,19 +244,46 @@
       }
 
       async resolveRedirect(element) {
-        if (!this.processedUrls.has(element.href)) {
-          this.processedUrls.set(element.href, void 0);
-          const res = await GM.xmlHttpRequest({
-            method: "GET",
-            url: element.href,
-            anonymous: true,
+        const href = element.href;
+      
+        if (!this.processedUrls.has(href)) {
+          // 创建一个新的 Promise 并存储在 Map 中
+          let resolvePromise;
+          const promise = new Promise((resolve) => {
+            resolvePromise = resolve;
           });
-          if (res.finalUrl) {
-            this.processedUrls.set(element.href, res.finalUrl);
-            element.href = res.finalUrl;
+          this.processedUrls.set(href, promise);
+      
+          try {
+            const res = await GM.xmlHttpRequest({
+              method: "GET",
+              url: href,
+              anonymous: true,
+            });
+            if (res.finalUrl) {
+              const url = res.finalUrl;
+              this.processedUrls.set(href, url);
+              element.href = url;
+            } else {
+              this.processedUrls.delete(href); // 请求失败时删除占位符
+            }
+          } catch (error) {
+            console.error("请求失败:", error);
+            this.processedUrls.delete(href); // 请求失败时删除占位符
+          } finally {
+            resolvePromise(); // 请求完成后解析 Promise
           }
         } else {
-          element.href = this.processedUrls.get(element.href);
+          const cachedValue = this.processedUrls.get(href);
+      
+          if (cachedValue instanceof Promise) {
+            // 如果是 Promise，等待其完成
+            await cachedValue;
+            element.href = this.processedUrls.get(href);
+          } else {
+            // 否则直接使用缓存值
+            element.href = cachedValue;
+          }
         }
       }
     };
@@ -810,10 +837,10 @@
         unresolvableWebsites: ["nourl.ubs.baidu.com", "lightapp.baidu.com"],
         specialElements: [
           ".cos-row",
+          ".c-group-wrapper",
           "[class*=catalog-list]",
           "[class*=group-content]",
         ],
-        // fallbackResolver: RedirectApp.createFallbackResolver(),
         fallbackResolver: new RedirectApp.FallbackResolver(),
         resolveRedirect: async function (element) {
           const url = this.specialElements.some((selector) =>
@@ -825,7 +852,10 @@
             url &&
             url !== "null" &&
             url !== "undefined" &&
-            !this.unresolvableWebsites.some((u) => url.includes(u))
+            url !== "" &&
+            url !== "about:blank" &&
+            url !== "javascript:void(0);" &&
+            !this.unresolvableWebsites.some((u) => url?.includes(u))
           ) {
             RedirectApp.removeLinkRedirect(this, element, url);
           } else {
