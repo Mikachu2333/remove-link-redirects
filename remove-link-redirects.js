@@ -1218,7 +1218,8 @@
               const url = decodeURIComponent(
                 new URL($a.href).searchParams.get("url")
               );
-              if (url) {
+              // https://www.google.com.hk/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.nimh.nih.gov/health/topics/autism-spectrum-disorders-asd&ved=2ahUKEwjw9tvtyvuHAxWB4zQHHWG_OxEQFnoECD8QAw&usg=AOvVaw3EtXPbEnAbMkeAH3ATQWUY
+              if (url && /w+\.google\..+\/url\?/.test(url)) {
                 $a.href = url;
                 $a.setAttribute(RedirectApp.REDIRECT_COMPLETED, "true");
               }
