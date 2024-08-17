@@ -143,10 +143,19 @@
       },
       {
         name: "QQ",
-        urlTest: /c\.pc\.qq\.com.*\?pfurl=(.*)/,
+        urlTest: /c\.pc\.qq\.com.*pfurl=(.*)/,
         resolveAutoJump: function () {
           location.href = decodeURIComponent(
             new URL(location.href).searchParams.get("pfurl")
+          );
+        },
+      },
+      {
+        name: "QQ",
+        urlTest: /c\.pc\.qq\.com.*url=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            new URL(location.href).searchParams.get("url")
           );
         },
       },
@@ -174,6 +183,15 @@
         resolveAutoJump: function () {
           location.href = decodeURIComponent(
             new URL(location.href).searchParams.get("target")
+          );
+        },
+      },
+      {
+        name: "NodeSeek",
+        urlTest: /www\.nodeseek\.com\/jump\?to=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            new URL(location.href).searchParams.get("to")
           );
         },
       },
@@ -244,19 +262,46 @@
       }
 
       async resolveRedirect(element) {
-        if (!this.processedUrls.has(element.href)) {
-          this.processedUrls.set(element.href, void 0);
-          const res = await GM.xmlHttpRequest({
-            method: "GET",
-            url: element.href,
-            anonymous: true,
+        const href = element.href;
+
+        if (!this.processedUrls.has(href)) {
+          // 创建一个新的 Promise 并存储在 Map 中
+          let resolvePromise;
+          const promise = new Promise((resolve) => {
+            resolvePromise = resolve;
           });
-          if (res.finalUrl) {
-            this.processedUrls.set(element.href, res.finalUrl);
-            element.href = res.finalUrl;
+          this.processedUrls.set(href, promise);
+
+          try {
+            const res = await GM.xmlHttpRequest({
+              method: "GET",
+              url: href,
+              anonymous: true,
+            });
+            if (res.finalUrl) {
+              const url = res.finalUrl;
+              this.processedUrls.set(href, url);
+              element.href = url;
+            } else {
+              this.processedUrls.delete(href); // 请求失败时删除占位符
+            }
+          } catch (error) {
+            console.error("请求失败:", error);
+            this.processedUrls.delete(href); // 请求失败时删除占位符
+          } finally {
+            resolvePromise(); // 请求完成后解析 Promise
           }
         } else {
-          element.href = this.processedUrls.get(element.href);
+          const cachedValue = this.processedUrls.get(href);
+
+          if (cachedValue instanceof Promise) {
+            // 如果是 Promise，等待其完成
+            await cachedValue;
+            element.href = this.processedUrls.get(href);
+          } else {
+            // 否则直接使用缓存值
+            element.href = cachedValue;
+          }
         }
       }
     };
@@ -274,7 +319,7 @@
     static removeLinkRedirect(caller, element, realUrl, options) {
       element.setAttribute(RedirectApp.REDIRECT_COMPLETED, "true");
       if ((realUrl && element.href !== realUrl) || options?.force) {
-        element.href = realUrl;
+        element.href = decodeURIComponent(realUrl);
       } else if (caller) {
         if (!caller.fallbackResolver) {
           caller.fallbackResolver = new RedirectApp.FallbackResolver();
@@ -351,6 +396,8 @@
      * 当页面准备就绪时，进行初始化动作
      * 有一些服务提供者需要在页面准备就绪时进行特殊的初始化操作
      * 比如百度搜索，需要监听URL变化
+     * 以及一些情况不需要RediectApp介入
+     * 如谷歌搜索需要监听的是href变化，而链接本身没有重定向
      */
     async initProviders() {
       for (const provider of this.registeredProviders) {
@@ -821,10 +868,10 @@
         unresolvableWebsites: ["nourl.ubs.baidu.com", "lightapp.baidu.com"],
         specialElements: [
           ".cos-row",
+          ".c-group-wrapper",
           "[class*=catalog-list]",
           "[class*=group-content]",
         ],
-        // fallbackResolver: RedirectApp.createFallbackResolver(),
         fallbackResolver: new RedirectApp.FallbackResolver(),
         resolveRedirect: async function (element) {
           const url = this.specialElements.some((selector) =>
@@ -836,7 +883,10 @@
             url &&
             url !== "null" &&
             url !== "undefined" &&
-            !this.unresolvableWebsites.some((u) => url.includes(u))
+            url !== "" &&
+            url !== "about:blank" &&
+            url !== "javascript:void(0);" &&
+            !this.unresolvableWebsites.some((u) => url?.includes(u))
           ) {
             RedirectApp.removeLinkRedirect(this, element, url);
           } else {
@@ -1079,23 +1129,50 @@
         name: "pc6下载站",
         urlTest: /www\.pc6\.com/,
         linkTest: /www\.pc6\.com\/.*\?gourl=(.*)/,
+        customDecode: function (encoded) {
+          const key = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+          const len = key.length;
+          let d = 0;
+          let s = new Array(Math.floor(encoded.length / 3));
+          const b = s.length;
+          for (let i = 0; i < b; i++) {
+            const b1 = key.indexOf(encoded.charAt(d++));
+            const b2 = key.indexOf(encoded.charAt(d++));
+            const b3 = key.indexOf(encoded.charAt(d++));
+            s[i] = b1 * len * len + b2 * len + b3;
+          }
+          const decoded = String.fromCharCode(...s);
+          return decoded;
+        },
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
             this,
             element,
-            new URL(element.href).searchParams.get("gourl")
+            this.customDecode(new URL(element.href).searchParams.get("gourl"))
           );
         },
       },
       {
         name: "QQ",
         urlTest: true,
-        linkTest: /c\.pc\.qq\.com.*\?pfurl=(.*)/,
+        linkTest: /c\.pc\.qq\.com.*pfurl=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
             this,
             element,
             new URL(element.href).searchParams.get("pfurl")
+          );
+        },
+      },
+      {
+        name: "QQ",
+        urlTest: true,
+        linkTest: /c\.pc\.qq\.com.*url=(.*)/,
+        resolveRedirect: function (element) {
+          RedirectApp.removeLinkRedirect(
+            this,
+            element,
+            decodeURIComponent(new URL(element.href).searchParams.get("url"))
           );
         },
       },
@@ -1127,6 +1204,38 @@
           if (a) {
             RedirectApp.removeLinkRedirect(this, element, a.href);
           }
+        },
+      },
+      {
+        name: "NodeSeek",
+        urlTest: /www\.nodeseek\.com/,
+        linkTest: /www\.nodeseek\.com\/jump\?to=(.*)/,
+        resolveRedirect: function (element) {
+          RedirectApp.removeLinkRedirect(
+            this,
+            element,
+            new URL(element.href).searchParams.get("to")
+          );
+        },
+      },
+      {
+        name: "Google搜索",
+        urlTest: /w+\.google\./,
+        linkTest: false,
+        onInit: function () {
+          document.addEventListener("contextmenu", function (event) {
+            const target = event.target;
+            const $a = target.closest("a");
+            if ($a && !$a.getAttribute(RedirectApp.REDIRECT_COMPLETED)) {
+              const url = decodeURIComponent(
+                new URL($a.href).searchParams.get("url")
+              );
+              if (url && /w+\.google\..+\/url\?/.test(url)) {
+                $a.href = url;
+                $a.setAttribute(RedirectApp.REDIRECT_COMPLETED, "true");
+              }
+            }
+          });
         },
       },
     ];
