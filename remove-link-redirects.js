@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。并且保证去除重定向的有效性，采用三级方案，原地解析->自动跳转->后台访问，保证了一定能去除重定向链接
-// @version           2.6.1
+// @version           2.6.2
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://*/*
@@ -396,6 +396,8 @@
      * 当页面准备就绪时，进行初始化动作
      * 有一些服务提供者需要在页面准备就绪时进行特殊的初始化操作
      * 比如百度搜索，需要监听URL变化
+     * 以及一些情况不需要RediectApp介入
+     * 如谷歌搜索需要监听的是href变化，而链接本身没有重定向
      */
     async initProviders() {
       for (const provider of this.registeredProviders) {
@@ -1209,7 +1211,6 @@
         name: "Google搜索",
         urlTest: /w+\.google\./,
         linkTest: false,
-        processedUrls: new Set(),
         onInit: function () {
           document.addEventListener("contextmenu", function (event) {
             const target = event.target;
