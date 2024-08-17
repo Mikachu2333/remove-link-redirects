@@ -761,18 +761,29 @@
       },
       {
         name: "Twitter",
-        urlTest: /twitter\.com/,
+        urlTest: /(twitter|x)\.com/,
         linkTest: /t\.co\/\w+/,
-        resolveRedirect: function (element) {
+        resolveRedirect: async function (element) {
           if (/(http|https)?:\/\//.test(element.title)) {
             const url = decodeURIComponent(element.title);
             RedirectApp.removeLinkRedirect(this, element, url);
             return;
           }
-          const innerText = element.innerText.replace(/…$/, "");
-          if (/(http|https)?:\/\//.test(innerText)) {
-            RedirectApp.removeLinkRedirect(this, element, innerText);
+          const textContent = element.textContent.replace(/…$/, "");
+          if (/(http|https)?:\/\//.test(textContent)) {
+            RedirectApp.removeLinkRedirect(this, element, textContent);
             return;
+          } else {
+            const res = await GM.xmlHttpRequest({
+              method: "GET",
+              url: "https://" + textContent,
+              anonymous: true,
+            });
+            if (res.status === 200) {
+              RedirectApp.removeLinkRedirect(this, element, res.finalUrl);
+            } else {
+              RedirectApp.removeLinkRedirect(this, element, "http://" + textContent);
+            }
           }
         },
       },
