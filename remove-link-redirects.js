@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。并且保证去除重定向的有效性，采用三级方案，原地解析->自动跳转->后台访问，保证了一定能去除重定向链接
-// @version           2.7.1
+// @version           2.7.3
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://*/*
@@ -444,6 +444,7 @@
      */
     bootstrap() {
       this.registerProviders();
+      console.log(this.registeredProviders);
       addEventListener("DOMContentLoaded", this.initProviders.bind(this));
       this.mutationObserver.observe(document, {
         childList: true,
@@ -612,49 +613,43 @@
         name: "CSDN",
         urlTest: /blog\.csdn\.net/,
         linkTest: true,
-        onInit: async function () {
-          window.location.reload();
-        },
         resolveRedirect: function (element) {
           const container = document.querySelector("#content_views");
-          if (container?.contains(element)) {
-            if (!element.onclick && element.origin !== window.location.origin) {
-              RedirectApp.removeLinkRedirect(this, element, element.href, {
-                force: true,
-              });
-              element.onclick = function (e) {
-                // 阻止事件冒泡, 因为上层元素绑定的click事件会重定向
-                e.stopPropagation?.();
-                e.preventDefault?.();
-                e.stopImmediatePropagation?.();
-              };
-            }
+          if (!container?.contains(element)) {
+            return;
           }
-          const articleContent = document.querySelector("#article_content");
-          const links = articleContent.querySelectorAll("a");
 
-          links.forEach((link) => {
-            const area = document.createElement("area");
-            // 复制所有属性
-            let hasDataAttribute = false;
-            for (const attr of link.attributes) {
-              if (attr.name.startsWith("data-")) {
-                hasDataAttribute = true;
-              }
-              area.setAttribute(attr.name, attr.value);
-            }
-            setTimeout(() => {
-              area.innerHTML = link.innerHTML;
-              // 复制样式
-              if (hasDataAttribute) {
-                area.style.cssText = "color: #fc5531 !important;";
-              } else {
-                area.style.cssText = "color: #6795b4 !important;";
-              }
-              // 替换元素
-              link.parentNode.replaceChild(area, link);
+          if (!element.onclick && element.origin !== window.location.origin) {
+            RedirectApp.removeLinkRedirect(this, element, element.href, {
+              force: true,
             });
-          }, 100);
+            element.onclick = function (e) {
+              // 阻止事件冒泡, 因为上层元素绑定的click事件会重定向
+              e.stopPropagation?.();
+              e.preventDefault?.();
+              e.stopImmediatePropagation?.();
+            };
+          }
+
+          const span = document.createElement("span");
+          span.textContent = element.textContent;
+          let hasDataAttribute = false;
+          for (const attr of element.attributes) {
+            if (attr.name.startsWith("data-")) {
+              hasDataAttribute = true;
+            }
+            span.setAttribute(attr.name, attr.value);
+          }
+          if (hasDataAttribute) {
+            span.style.cssText = "color: #fc5531 !important;";
+          } else {
+            span.style.cssText = "color: #6795b4 !important;";
+          }
+          span.style.cursor = "pointer";
+          span.onclick = function (e) {
+            location.href = element.href;
+          };
+          element.parentNode.replaceChild(span, element);
         },
       },
       {
