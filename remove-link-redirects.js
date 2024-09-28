@@ -62,7 +62,7 @@
     static providers = [
       {
         name: "酷安",
-        urlTest: /www\.coolapk\.com\/link\?url=(.*)/,
+        urlTest: /www\.coolapk\.com\/link\?.*url=(.*)/,
         resolveAutoJump: function () {
           location.href = decodeURIComponent(
             new URL(location.href).searchParams.get("url")
@@ -71,7 +71,7 @@
       },
       {
         name: "CSDN",
-        urlTest: /link\.csdn\.net\/\?target=(.*)/,
+        urlTest: /link\.csdn\.net\/\?.*target=(.*)/,
         resolveAutoJump: function () {
           location.href = decodeURIComponent(
             new URL(location.href).searchParams.get("target")
@@ -98,7 +98,7 @@
       },
       {
         name: "印象笔记",
-        urlTest: /app\.yinxiang\.com\/OutboundRedirect\.action\?dest=(.*)/,
+        urlTest: /app\.yinxiang\.com\/OutboundRedirect\.action\?.*dest=(.*)/,
         resolveAutoJump: function () {
           location.href = decodeURIComponent(
             new URL(location.href).searchParams.get("dest")
@@ -107,7 +107,7 @@
       },
       {
         name: "Youtube",
-        urlTest: /www\.youtube\.com\/redirect\?q=(.*)/,
+        urlTest: /www\.youtube\.com\/redirect\?.*q=(.*)/,
         resolveAutoJump: function () {
           location.href = decodeURIComponent(
             new URL(location.href).searchParams.get("q")
@@ -170,7 +170,7 @@
       },
       {
         name: "腾讯文档",
-        urlTest: /docs\.qq\.com\/.*?url=(.*)/,
+        urlTest: /docs\.qq\.com\/.*\?url=(.*)/,
         resolveAutoJump: function () {
           location.href = decodeURIComponent(
             new URL(location.href).searchParams.get("url")
@@ -179,7 +179,7 @@
       },
       {
         name: "金山文档",
-        urlTest: /www\.kdocs\.cn\/office\/link\?target=(.*)/,
+        urlTest: /www\.kdocs\.cn\/office\/link\?.*target=(.*)/,
         resolveAutoJump: function () {
           location.href = decodeURIComponent(
             new URL(location.href).searchParams.get("target")
@@ -188,7 +188,7 @@
       },
       {
         name: "NodeSeek",
-        urlTest: /www\.nodeseek\.com\/jump\?to=(.*)/,
+        urlTest: /www\.nodeseek\.com\/jump\?.*to=(.*)/,
         resolveAutoJump: function () {
           location.href = decodeURIComponent(
             new URL(location.href).searchParams.get("to")
@@ -622,9 +622,41 @@
               element.onclick = function (e) {
                 // 阻止事件冒泡, 因为上层元素绑定的click事件会重定向
                 e.stopPropagation?.();
+                e.preventDefault?.();
+                e.stopImmediatePropagation?.();
               };
             }
           }
+          setTimeout(() => {
+            const articleContent = document.querySelector("#article_content");
+            const links = articleContent.querySelectorAll("a");
+
+            links.forEach((link) => {
+              const area = document.createElement("area");
+              // 复制所有属性
+              let hasDataAttribute = false;
+              for (const attr of link.attributes) {
+                if (attr.name.startsWith("data-")) {
+                  hasDataAttribute = true;
+                }
+                area.setAttribute(attr.name, attr.value);
+              }
+              area.innerHTML = link.innerHTML;
+              // TODO: 修复样式
+              // area.innerHTML = "ASDASD";
+              // 复制样式
+              if (hasDataAttribute) {
+                //   // 将颜色改成#fc5531
+                // area.style.color = "#fc5531 !important;";
+                area.style.cssText = "color: #fc5531 !important;";
+              } else {
+                // area.style.color = "#6795b4 !important;";
+                area.style.cssText = "color: #6795b4 !important;";
+              }
+              // 替换元素
+              link.parentNode.replaceChild(area, link);
+            });
+          }, 2000);
         },
       },
       {
@@ -1280,9 +1312,9 @@
     ];
   }
 
-  const autoJumpApp = new AutoJumpApp();
-  const autoJumpResult = autoJumpApp.bootstrap();
-  if (autoJumpResult) return;
+  // const autoJumpApp = new AutoJumpApp();
+  // const autoJumpResult = autoJumpApp.bootstrap();
+  // if (autoJumpResult) return;
 
   const redirectApp = new RedirectApp();
   redirectApp.bootstrap();
