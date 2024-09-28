@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。并且保证去除重定向的有效性，采用三级方案，原地解析->自动跳转->后台访问，保证了一定能去除重定向链接
-// @version           2.7.3
+// @version           2.7.4
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://*/*
@@ -631,25 +631,28 @@
             };
           }
 
-          const span = document.createElement("span");
-          span.textContent = element.textContent;
-          let hasDataAttribute = false;
-          for (const attr of element.attributes) {
-            if (attr.name.startsWith("data-")) {
-              hasDataAttribute = true;
+          try {
+            const span = document.createElement("span");
+            console.log(element.textContent);
+            span.textContent = element.textContent;
+            let hasDataAttribute = false;
+            for (const attr of element.attributes) {
+              if (attr.name.startsWith("data-")) {
+                hasDataAttribute = true;
+              }
+              span.setAttribute(attr.name, attr.value);
             }
-            span.setAttribute(attr.name, attr.value);
-          }
-          if (hasDataAttribute) {
-            span.style.cssText = "color: #fc5531 !important;";
-          } else {
-            span.style.cssText = "color: #6795b4 !important;";
-          }
-          span.style.cursor = "pointer";
-          span.onclick = function (e) {
-            location.href = element.href;
-          };
-          element.parentNode.replaceChild(span, element);
+            if (hasDataAttribute) {
+              span.style.cssText = "color: #fc5531 !important;";
+            } else {
+              span.style.cssText = "color: #6795b4 !important;";
+            }
+            span.style.cursor = "pointer";
+            span.onclick = function (e) {
+              location.href = element.href;
+            };
+            element.parentNode.replaceChild(span, element);
+          } catch (error) {}
         },
       },
       {
