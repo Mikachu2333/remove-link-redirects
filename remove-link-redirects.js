@@ -444,6 +444,10 @@
      */
     bootstrap() {
       this.registerProviders();
+      document.querySelectorAll("a").forEach((element) => {
+        this.handleNode(element);
+      });
+      console.log("去除重定向服务正在运行：", this.registeredProviders);
       addEventListener("DOMContentLoaded", this.initProviders.bind(this));
       this.mutationObserver.observe(document, {
         childList: true,
