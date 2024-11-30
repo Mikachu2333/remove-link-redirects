@@ -2,7 +2,7 @@
 // @name              去除链接重定向
 // @author            Meriel
 // @description       能原地解析的链接绝不在后台访问，去除重定向的过程快速且高效，平均时间在0.02ms~0.05ms之间。几乎没有任何在后台访问网页获取去重链接的操作，一切都在原地进行，对速度精益求精。去除网页内链接的重定向，具有高准确性和高稳定性，以及相比同类插件更低的时间占用。并且保证去除重定向的有效性，采用三级方案，原地解析->自动跳转->后台访问，保证了一定能去除重定向链接
-// @version           2.7.5
+// @version           2.7.8
 // @namespace         Violentmonkey Scripts
 // @grant             GM.xmlHttpRequest
 // @match             *://*/*
@@ -13,6 +13,8 @@
 // @run-at            document-end
 // @namespace         https://greasyfork.org/zh-CN/users/876245-meriel-varen
 // @license           MIT
+// @downloadURL https://update.greasyfork.org/scripts/483475/%E5%8E%BB%E9%99%A4%E9%93%BE%E6%8E%A5%E9%87%8D%E5%AE%9A%E5%90%91.user.js
+// @updateURL https://update.greasyfork.org/scripts/483475/%E5%8E%BB%E9%99%A4%E9%93%BE%E6%8E%A5%E9%87%8D%E5%AE%9A%E5%90%91.meta.js
 // ==/UserScript==
 
 (() => {
@@ -328,7 +330,11 @@
     static removeLinkRedirect(caller, element, realUrl, options) {
       element.setAttribute(RedirectApp.REDIRECT_COMPLETED, "true");
       if ((realUrl && element.href !== realUrl) || options?.force) {
-        element.href = decodeURIComponent(realUrl);
+        try {
+          element.href = decodeURIComponent(realUrl);
+        } catch (_) {
+          element.href = realUrl;
+        }
       } else if (caller) {
         if (!caller.fallbackResolver) {
           caller.fallbackResolver = new RedirectApp.FallbackResolver();
@@ -633,29 +639,6 @@
               e.stopImmediatePropagation?.();
             };
           }
-
-          try {
-            const span = document.createElement("span");
-            console.log(element.textContent);
-            span.textContent = element.textContent;
-            let hasDataAttribute = false;
-            for (const attr of element.attributes) {
-              if (attr.name.startsWith("data-")) {
-                hasDataAttribute = true;
-              }
-              span.setAttribute(attr.name, attr.value);
-            }
-            if (hasDataAttribute) {
-              span.style.cssText = "color: #fc5531 !important;";
-            } else {
-              span.style.cssText = "color: #6795b4 !important;";
-            }
-            span.style.cursor = "pointer";
-            span.onclick = function (e) {
-              location.href = element.href;
-            };
-            element.parentNode.replaceChild(span, element);
-          } catch (error) {}
         },
       },
       {
@@ -1003,13 +986,15 @@
             const realUrl = element.getAttribute("data-href");
             RedirectApp.removeLinkRedirect(this, element, realUrl);
           }
-          const url = new URL(element.href);
-          if (url.searchParams.get("url")) {
-            RedirectApp.removeLinkRedirect(
-              this,
-              element,
-              url.searchParams.get("url")
-            );
+          if (element && element.href) {
+            const url = new URL(element?.href);
+            if (url?.searchParams.get("url")) {
+              RedirectApp.removeLinkRedirect(
+                this,
+                element,
+                url.searchParams.get("url")
+              );
+            }
           }
         },
       },
@@ -1295,7 +1280,7 @@
         urlTest: /w+\.google\./,
         linkTest: false,
         onInit: function () {
-          document.addEventListener("mousedown", function (event) {
+          window.addEventListener("mousedown", function (event) {
             const $a = event?.target?.closest("a");
             if ($a && !$a.getAttribute(RedirectApp.REDIRECT_COMPLETED)) {
               const oldUrl = $a.href;
