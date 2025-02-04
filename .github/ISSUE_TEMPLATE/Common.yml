@@ -1,7 +1,6 @@
 name: 脚本问题反馈
 description: 完整填写本模板以反馈你发现的问题，请在填写前确认其他issue是否提过
 title: "在此处填写网站名称+遇到的问题"
-type: "Bug"
 labels: ["priority:none"]
 body:
   - type: markdown
