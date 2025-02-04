@@ -72,6 +72,24 @@
         },
       },
       {
+        name: "爱发电主站",
+        urlTest: /afdian\.com\/link\?.*target=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            new URL(location.href).searchParams.get("target")
+          );
+        },
+      },
+      {
+        name: "爱发电备用站",
+        urlTest: /ifdian\.net\/link\?.*target=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            new URL(location.href).searchParams.get("target")
+          );
+        },
+      },
+      {
         name: "CSDN",
         urlTest: /link\.csdn\.net\/\?.*target=(.*)/,
         resolveAutoJump: function () {
