@@ -9,7 +9,7 @@
 // @connect           *
 // @icon              https://cdn-icons-png.flaticon.com/512/208/208895.png
 // @supportURL        https://github.com/MerielVaren/remove-link-redirects
-// @homepage          https://greasyfork.org/zh-CN/scripts/483475-%E5%8E%BB%E9%99%A4%E9%93%BE%E6%8E%A5%E9%87%8D%E5%AE%9A%E5%90%91
+// @homepage          https://greasyfork.org/zh-CN/scripts/483475
 // @run-at            document-end
 // @namespace         https://greasyfork.org/zh-CN/users/876245-meriel-varen
 // @license           MIT
