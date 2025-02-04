@@ -81,6 +81,15 @@
         },
       },
       {
+        name: "立创开源硬件平台",
+        urlTest: /oshwhub\.com\/link\?.*target=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            new URL(location.href).searchParams.get("target")
+          );
+        },
+      },
+      {
         name: "爱发电备用站",
         urlTest: /ifdian\.net\/link\?.*target=(.*)/,
         resolveAutoJump: function () {
