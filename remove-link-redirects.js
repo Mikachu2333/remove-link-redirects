@@ -72,33 +72,6 @@
         },
       },
       {
-        name: "爱发电主站",
-        urlTest: /afdian\.com\/link\?.*target=(.*)/,
-        resolveAutoJump: function () {
-          location.href = decodeURIComponent(
-            new URL(location.href).searchParams.get("target")
-          );
-        },
-      },
-      {
-        name: "立创开源硬件平台",
-        urlTest: /oshwhub\.com\/link\?.*target=(.*)/,
-        resolveAutoJump: function () {
-          location.href = decodeURIComponent(
-            new URL(location.href).searchParams.get("target")
-          );
-        },
-      },
-      {
-        name: "爱发电备用站",
-        urlTest: /ifdian\.net\/link\?.*target=(.*)/,
-        resolveAutoJump: function () {
-          location.href = decodeURIComponent(
-            new URL(location.href).searchParams.get("target")
-          );
-        },
-      },
-      {
         name: "CSDN",
         urlTest: /link\.csdn\.net\/\?.*target=(.*)/,
         resolveAutoJump: function () {
@@ -502,6 +475,18 @@
         },
       },
       {
+        name: "立创开源硬件平台",
+        urlTest: /oshwhub\.com/,
+        linkTest: /oshwhub\.com\/link\?target=(.*)/,
+        resolveRedirect: function (element) {
+          RedirectApp.removeLinkRedirect(
+            this,
+            element,
+            new URL(element.href).searchParams.get("target")
+          );
+        },
+      },
+      {
         name: "Mozilla",
         urlTest: /addons\.mozilla\.org/,
         linkTest: /outgoing\.prod\.mozaws\.net\/v\d\/\w+\/(.*)/,
@@ -520,13 +505,23 @@
       },
       {
         name: "爱发电",
-        urlTest: /afdian\.net/,
-        linkTest: /afdian\.net\/link\?target=(.*)/,
+        urlTest: /afdian\.com/,
+        linkTest: /afdian\.com\/link\?target=(.*)/,
         resolveRedirect: function (element) {
           RedirectApp.removeLinkRedirect(
             this,
             element,
             new URL(element.href).searchParams.get("target")
+          );
+        },
+      },
+      {
+        name: "爱发电备用站",
+        urlTest: /ifdian\.net/,
+        linkTest: /ifdian\.met\/link\?target=(.*)/,
+        resolveAutoJump: function () {
+          location.href = decodeURIComponent(
+            new URL(location.href).searchParams.get("target")
           );
         },
       },
