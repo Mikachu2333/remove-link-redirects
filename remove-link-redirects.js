@@ -13,8 +13,8 @@
 // @run-at            document-end
 // @namespace         https://greasyfork.org/zh-CN/users/876245-meriel-varen
 // @license           MIT
-// @downloadURL https://update.greasyfork.org/scripts/483475/%E5%8E%BB%E9%99%A4%E9%93%BE%E6%8E%A5%E9%87%8D%E5%AE%9A%E5%90%91.user.js
-// @updateURL https://update.greasyfork.org/scripts/483475/%E5%8E%BB%E9%99%A4%E9%93%BE%E6%8E%A5%E9%87%8D%E5%AE%9A%E5%90%91.meta.js
+// @downloadURL https://raw.githubusercontent.com/Mikachu2333/remove-link-redirects/refs/heads/master/remove-link-redirects.js
+// @updateURL https://raw.githubusercontent.com/Mikachu2333/remove-link-redirects/refs/heads/master/remove-link-redirects.js
 // ==/UserScript==
 
 (() => {
